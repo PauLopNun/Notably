@@ -9,8 +9,14 @@ class NoteService {
   final _client = Supabase.instance.client;
 
   Future<List<Note>> fetchNotes() async {
-    final response = await _client.from('notes').select().order('created_at', ascending: false);
-    return response.map<Note>((note) => Note.fromMap(note)).toList();
+  final user = Supabase.instance.client.auth.currentUser;
+  if (user == null) return [];
+  final response = await _client
+    .from('notes')
+    .select()
+    .eq('user_id', user.id)
+    .order('created_at', ascending: false);
+  return response.map<Note>((note) => Note.fromMap(note)).toList();
   }
 
   Future<void> createNote(Note note) async {

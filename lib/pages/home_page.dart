@@ -11,11 +11,16 @@ class HomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(notesProvider);
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        title: const Text('Tus notas'),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        title: const Text('Tus notas', style: TextStyle(color: Color(0xFF22223B), fontWeight: FontWeight.bold)),
+        iconTheme: const IconThemeData(color: Color(0xFF22223B)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Color(0xFF4A4E69)),
+            tooltip: 'Cerrar sesión',
             onPressed: () async {
               await ref.read(notesProvider.notifier).loadNotes();
               await Supabase.instance.client.auth.signOut();
@@ -25,15 +30,20 @@ class HomePage extends ConsumerWidget {
         ],
       ),
       body: notes.isEmpty
-          ? const Center(child: Text('No hay notas todavía'))
+          ? const Center(
+              child: Text(
+                'No hay notas todavía',
+                style: TextStyle(fontSize: 18, color: Color(0xFF9A8C98)),
+              ),
+            )
           : ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
               itemCount: notes.length,
               itemBuilder: (context, index) {
                 final note = notes[index];
                 return NoteCard(
                   note: note,
                   onTap: () async {
-                    // Navegar al editor de nota para editar
                     await Navigator.of(context).pushNamed('/editor', arguments: note);
                     await ref.read(notesProvider.notifier).loadNotes();
                   },
@@ -44,12 +54,12 @@ class HomePage extends ConsumerWidget {
               },
             ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF4A4E69),
         onPressed: () async {
-          // Navegar al editor de nota para crear nueva
           await Navigator.of(context).pushNamed('/editor', arguments: null);
           await ref.read(notesProvider.notifier).loadNotes();
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

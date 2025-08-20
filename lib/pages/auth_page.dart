@@ -23,11 +23,17 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
       } else {
         await Supabase.instance.client.auth.signUp(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
