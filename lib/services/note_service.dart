@@ -9,32 +9,92 @@ class NoteService {
   final _client = Supabase.instance.client;
 
   Future<List<Note>> fetchNotes() async {
-  final user = Supabase.instance.client.auth.currentUser;
-  if (user == null) return [];
-  final response = await _client
-    .from('notes')
-    .select()
-    .eq('user_id', user.id)
-    .order('created_at', ascending: false);
-  return response.map<Note>((note) => Note.fromMap(note)).toList();
+    try {
+      final user = _client.auth.currentUser;
+      if (user == null) {
+        throw Exception('Usuario no autenticado');
+      }
+
+      final response = await _client
+        .from('notes')
+        .select()
+        .eq('user_id', user.id)
+        .order('created_at', ascending: false);
+
+      if (response == null) {
+        return [];
+      }
+
+      return response.map<Note>((note) => Note.fromMap(note)).toList();
+    } catch (e) {
+      print('Error fetching notes: $e');
+      rethrow;
+    }
   }
 
   Future<void> createNote(Note note) async {
-    await _client.from('notes').insert({
-      'title': note.title,
-      'content': jsonEncode(note.content),
-      'user_id': note.userId,
-    });
+    try {
+      final user = _client.auth.currentUser;
+      if (user == null) {
+        throw Exception('Usuario no autenticado');
+      }
+
+      final response = await _client.from('notes').insert({
+        'title': note.title,
+        'content': jsonEncode(note.content),
+        'user_id': note.userId,
+      }).select();
+
+      if (response == null || response.isEmpty) {
+        throw Exception('Error al crear la nota');
+      }
+    } catch (e) {
+      print('Error creating note: $e');
+      rethrow;
+    }
   }
 
   Future<void> updateNote(Note note) async {
-    await _client.from('notes').update({
-      'title': note.title,
-      'content': jsonEncode(note.content),
-    }).eq('id', note.id);
+    try {
+      final user = _client.auth.currentUser;
+      if (user == null) {
+        throw Exception('Usuario no autenticado');
+      }
+
+      final response = await _client.from('notes').update({
+        'title': note.title,
+        'content': jsonEncode(note.content),
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', note.id).eq('user_id', user.id);
+
+      if (response == null) {
+        throw Exception('Error al actualizar la nota');
+      }
+    } catch (e) {
+      print('Error updating note: $e');
+      rethrow;
+    }
   }
 
   Future<void> deleteNote(String id) async {
-    await _client.from('notes').delete().eq('id', id);
+    try {
+      final user = _client.auth.currentUser;
+      if (user == null) {
+        throw Exception('Usuario no autenticado');
+      }
+
+      final response = await _client
+        .from('notes')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (response == null) {
+        throw Exception('Error al eliminar la nota');
+      }
+    } catch (e) {
+      print('Error deleting note: $e');
+      rethrow;
+    }
   }
 }
