@@ -29,10 +29,7 @@ class _NoteListState extends ConsumerState<NoteList> {
         _buildHeader(),
         
         // Separador
-        Container(
-          height: 1,
-          color: Colors.grey[300],
-        ),
+        Divider(height: 1, thickness: 1, color: Theme.of(context).dividerColor),
         
         // Lista de notas
         Expanded(
@@ -257,12 +254,12 @@ class _NoteListState extends ConsumerState<NoteList> {
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
+              border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.6)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -276,11 +273,7 @@ class _NoteListState extends ConsumerState<NoteList> {
                     Expanded(
                       child: Text(
                         note.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: Color(0xFF1F2937),
-                        ),
+                        style: Theme.of(context).textTheme.headlineSmall,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -288,14 +281,14 @@ class _NoteListState extends ConsumerState<NoteList> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         'Nota',
                         style: TextStyle(
                           fontSize: 10,
-                          color: const Color(0xFF6366F1),
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -305,29 +298,18 @@ class _NoteListState extends ConsumerState<NoteList> {
                 const SizedBox(height: 12),
                 Text(
                   _getNotePreview(note.content),
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    height: 1.4,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: Colors.grey[500],
-                    ),
+                    Icon(Icons.access_time, size: 16, color: Theme.of(context).hintColor),
                     const SizedBox(width: 6),
                     Text(
                       _formatDate(note.createdAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[500],
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const Spacer(),
                     Icon(

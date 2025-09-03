@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter_quill/flutter_quill.dart';
 import '../models/note.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/note_provider.dart';
+import '../services/realtime_collab_service.dart';
 
 class NoteEditorPage extends StatefulWidget {
   final Note? note;
@@ -18,6 +20,9 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
   final _titleController = TextEditingController();
   bool _isSaving = false;
   bool _hasChanges = false;
+  RealtimeCollabService? _collab;
+  StreamSubscription<dynamic>? _deltaSub;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -35,6 +40,23 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     // Listen for changes
     _titleController.addListener(_onContentChanged);
     _quillController.addListener(_onContentChanged);
+
+    // Setup realtime collab only for existing notes
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.note != null) {
+        _collab = RealtimeCollabService();
+        await _collab!.joinDocument(widget.note!.id);
+        _deltaSub = _collab!.incomingContentStream.listen((content) {
+          try {
+            _quillController = QuillController(
+              document: Document.fromJson(content),
+              selection: const TextSelection.collapsed(offset: 0),
+            );
+            setState(() {});
+          } catch (_) {}
+        });
+      }
+    });
   }
 
   void _onContentChanged() {
@@ -43,12 +65,22 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
         _hasChanges = true;
       });
     }
+    // Debounced full-content sync
+    if (_collab != null && widget.note != null) {
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        _collab!.sendFullContent(_quillController.document.toDelta().toJson());
+      });
+    }
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _quillController.dispose();
+    _deltaSub?.cancel();
+    _collab?.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -169,21 +201,25 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-        return WillPopScope(
-          onWillPop: _onWillPop,
+        return PopScope(
+          onPopInvoked: (didPop) async {
+            if (!didPop) {
+              final shouldPop = await _onWillPop();
+              if (shouldPop && context.mounted) {
+                Navigator.of(context).pop();
+              }
+            }
+          },
           child: Scaffold(
-            backgroundColor: const Color(0xFFF5F6FA),
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             appBar: AppBar(
-              backgroundColor: Colors.white,
-              elevation: 1,
+              backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+              elevation: Theme.of(context).appBarTheme.elevation ?? 0.5,
               title: Text(
                 widget.note == null ? 'Nueva nota' : 'Editar nota',
-                style: const TextStyle(
-                  color: Color(0xFF22223B), 
-                  fontWeight: FontWeight.bold
-                ),
+                style: Theme.of(context).appBarTheme.titleTextStyle,
               ),
-              iconTheme: const IconThemeData(color: Color(0xFF22223B)),
+              iconTheme: Theme.of(context).appBarTheme.iconTheme,
               actions: [
                 if (_hasChanges)
                   Container(
@@ -209,7 +245,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Icon(Icons.save, color: Color(0xFF4A4E69)),
+                    : const Icon(Icons.save),
                   tooltip: 'Guardar',
                   onPressed: _isSaving ? null : () => _saveNote(ref),
                 ),
@@ -219,11 +255,11 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black12,
+                      color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -237,29 +273,21 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                       padding: const EdgeInsets.all(16.0),
                       child: TextField(
                         controller: _titleController,
-                        style: const TextStyle(
-                          fontSize: 24, 
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF22223B),
-                        ),
-                        decoration: const InputDecoration(
+                        style: Theme.of(context).textTheme.headlineMedium,
+                        decoration: InputDecoration(
                           border: InputBorder.none,
                           hintText: 'Título de la nota',
-                          hintStyle: TextStyle(
-                            color: Color(0xFF9A8C98),
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          hintStyle: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Theme.of(context).hintColor),
                         ),
                       ),
                     ),
-                    const Divider(height: 1, thickness: 1, color: Color(0xFFF2E9E4)),
+                    Divider(height: 1, thickness: 1, color: Theme.of(context).dividerColor),
                     
                     // Simple toolbar with basic formatting
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF8F9FA),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(0),
                           topRight: Radius.circular(0),

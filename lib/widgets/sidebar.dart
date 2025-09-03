@@ -228,13 +228,15 @@ class _SidebarState extends ConsumerState<Sidebar> {
       );
     }
 
-    // Filtrar notas por búsqueda y categoría
+    // Filtrar notas por búsqueda y categoría (por prefijo emoji en título)
     final filteredNotes = notes.where((note) {
       final matchesSearch = _searchQuery.isEmpty || 
         note.title.toLowerCase().contains(_searchQuery.toLowerCase());
       
-      // Por ahora todas las notas van en "Todas"
-      final matchesCategory = _selectedCategory == 'Todas';
+      bool matchesCategory = true;
+      if (_selectedCategory != 'Todas') {
+        matchesCategory = note.title.startsWith(_selectedCategory.split(' ').first);
+      }
       
       return matchesSearch && matchesCategory;
     }).toList();

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/note.dart';
 import '../providers/note_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../services/realtime_collab_service.dart';
 
 class NoteEditor extends ConsumerStatefulWidget {
   final Note? note;
@@ -24,7 +26,10 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
   final _titleController = TextEditingController();
   bool _isSaving = false;
   bool _hasChanges = false;
-  bool _isCollaborative = false;
+  RealtimeCollabService? _collab;
+  StreamSubscription<dynamic>? _deltaSub;
+  Timer? _debounce;
+  String _selectedCategory = '📝 Notas';
 
   @override
   void initState() {
@@ -42,6 +47,23 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
     // Listen for changes
     _titleController.addListener(_onContentChanged);
     _quillController.addListener(_onContentChanged);
+
+    // Setup realtime collab only for existing notes
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (widget.note != null) {
+        _collab = RealtimeCollabService();
+        await _collab!.joinDocument(widget.note!.id);
+        _deltaSub = _collab!.incomingContentStream.listen((content) {
+          try {
+            _quillController = QuillController(
+              document: Document.fromJson(content),
+              selection: const TextSelection.collapsed(offset: 0),
+            );
+            setState(() {});
+          } catch (_) {}
+        });
+      }
+    });
   }
 
   void _onContentChanged() {
@@ -50,12 +72,34 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
         _hasChanges = true;
       });
     }
+    // Debounced full-content sync
+    if (_collab != null && widget.note != null) {
+      _debounce?.cancel();
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        _collab!.sendFullContent(_quillController.document.toDelta().toJson());
+      });
+    }
+  }
+
+  String _applyCategoryPrefix(String oldTitle, String newTitle) {
+    final categories = ['📝', '📚', '💼', '🎯', '📋', '💡', '📖'];
+    String cleaned = newTitle;
+    for (final emoji in categories) {
+      if (cleaned.startsWith('$emoji ')) {
+        cleaned = cleaned.substring(2);
+      }
+    }
+    final selectedEmoji = _selectedCategory.split(' ').first;
+    return '$selectedEmoji $cleaned';
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _quillController.dispose();
+    _deltaSub?.cancel();
+    _collab?.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -96,7 +140,7 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
         final newNote = Note(
           id: '',
           userId: user.id,
-          title: title,
+          title: '${_selectedCategory.split(' ').first} ${title}',
           content: content,
           createdAt: DateTime.now(),
         );
@@ -113,7 +157,7 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
         final updatedNote = Note(
           id: widget.note!.id,
           userId: widget.note!.userId,
-          title: title,
+          title: _applyCategoryPrefix(widget.note!.title, title),
           content: content,
           createdAt: widget.note!.createdAt,
         );
@@ -216,6 +260,22 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
           ),
           
           const SizedBox(width: 16),
+
+          // Categoría
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedCategory,
+              items: const [
+                '📝 Notas', '📚 Apuntes', '💼 Trabajo', '🎯 Proyectos',
+                '📋 Tareas', '💡 Ideas', '📖 Lecturas'
+              ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+              onChanged: (v) {
+                if (v == null) return;
+                setState(() => _selectedCategory = v);
+                _onContentChanged();
+              },
+            ),
+          ),
           
           // Indicador de cambios
           if (_hasChanges)
@@ -249,29 +309,8 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
           
           const SizedBox(width: 16),
           
-          // Botón de colaboración
-          IconButton(
-            onPressed: () {
-              setState(() {
-                _isCollaborative = !_isCollaborative;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    _isCollaborative 
-                      ? 'Modo colaborativo activado' 
-                      : 'Modo colaborativo desactivado'
-                  ),
-                  backgroundColor: _isCollaborative ? Colors.green : Colors.grey,
-                ),
-              );
-            },
-            icon: Icon(
-              _isCollaborative ? Icons.group : Icons.group_outlined,
-              color: _isCollaborative ? Colors.green : Colors.grey[600],
-            ),
-            tooltip: 'Modo colaborativo',
-          ),
+          // placeholder para controles adicionales
+          const SizedBox.shrink(),
           
           const SizedBox(width: 8),
           

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/note_provider.dart';
 import '../widgets/sidebar.dart';
 import '../widgets/note_list.dart';
 import '../widgets/note_editor.dart';
@@ -106,40 +105,51 @@ class _MainLayoutState extends ConsumerState<MainLayout> {
             _isEditorOpen = true;
           });
         },
-        backgroundColor: AppTheme.primaryColor,
-        foregroundColor: AppTheme.textPrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         icon: const Icon(Icons.add),
         label: const Text('Nueva nota'),
       ),
-      // Botón para alternar sidebar
-      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      // Evitar solapamiento con BottomAppBar usando notch y endDocked
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
       bottomNavigationBar: BottomAppBar(
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _isSidebarOpen = !_isSidebarOpen;
-                });
-              },
-              icon: Icon(
-                _isSidebarOpen ? Icons.menu_open : Icons.menu,
-                color: AppTheme.primaryColor,
-              ),
-            ),
-            const Spacer(),
-            if (_isEditorOpen)
-              TextButton.icon(
+        shape: const CircularNotchedRectangle(),
+        child: SafeArea(
+          top: false,
+          child: Row(
+            children: [
+              IconButton(
                 onPressed: () {
                   setState(() {
-                    _isEditorOpen = false;
-                    _selectedNote = null;
+                    _isSidebarOpen = !_isSidebarOpen;
                   });
                 },
-                icon: const Icon(Icons.close),
-                label: const Text('Cerrar editor'),
+                icon: Icon(
+                  _isSidebarOpen ? Icons.menu_open : Icons.menu,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
-          ],
+              IconButton(
+                tooltip: 'Ajustes',
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/settings');
+                },
+                icon: const Icon(Icons.settings),
+              ),
+              const Spacer(),
+              if (_isEditorOpen)
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _isEditorOpen = false;
+                      _selectedNote = null;
+                    });
+                  },
+                  icon: const Icon(Icons.close),
+                  label: const Text('Cerrar editor'),
+                ),
+            ],
+          ),
         ),
       ),
     );

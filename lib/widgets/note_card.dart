@@ -19,7 +19,7 @@ class NoteCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       child: Material(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         elevation: 2,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
@@ -39,28 +39,20 @@ class NoteCard extends StatelessWidget {
                         children: [
                           Text(
                             note.title,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Color(0xFF22223B),
-                            ),
+                            style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           const SizedBox(height: 8),
                           Text(
                             _getPreview(note.content),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 15, 
-                              color: Color(0xFF4A4E69),
-                              height: 1.4,
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4),
                           ),
                         ],
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Color(0xFF9A8C98)),
+                      icon: Icon(Icons.delete_outline, color: Theme.of(context).hintColor),
                       onPressed: onDelete,
                       tooltip: 'Eliminar',
                     ),
@@ -69,31 +61,24 @@ class NoteCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: Colors.grey[600],
-                    ),
+                    Icon(Icons.access_time, size: 16, color: Theme.of(context).hintColor),
                     const SizedBox(width: 6),
                     Text(
                       _formatDate(note.createdAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4A4E69).withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        'Nota',
+                        _extractCategory(note.title),
                         style: TextStyle(
                           fontSize: 10,
-                          color: const Color(0xFF4A4E69),
+                          color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -148,5 +133,12 @@ class NoteCard extends StatelessWidget {
     } else {
       return DateFormat('dd/MM/yyyy').format(date);
     }
+  }
+
+  String _extractCategory(String title) {
+    if (title.length >= 2 && title[1] == ' ') {
+      return title.substring(0, 1);
+    }
+    return 'Nota';
   }
 }

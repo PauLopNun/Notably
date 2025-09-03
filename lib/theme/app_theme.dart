@@ -56,13 +56,11 @@ class AppTheme {
         primary: primaryColor,
         secondary: secondaryColor,
         tertiary: accentColor,
-        surface: surfaceColor,
-        background: backgroundColor,
+        surface: backgroundColor,
         error: errorColor,
         onPrimary: textPrimary,
         onSecondary: textPrimary,
         onSurface: textPrimary,
-        onBackground: textPrimary,
         onError: textPrimary,
       ),
       
@@ -86,7 +84,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: cardColor,
         elevation: 8,
-        shadowColor: Colors.black.withOpacity(0.3),
+        shadowColor: Colors.black.withValues(alpha: 0.3),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -98,7 +96,7 @@ class AppTheme {
           backgroundColor: primaryColor,
           foregroundColor: textPrimary,
           elevation: 4,
-          shadowColor: primaryColor.withOpacity(0.3),
+          shadowColor: primaryColor.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -262,6 +260,97 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
+      ),
+    );
+  }
+
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: const ColorScheme.light(
+        primary: Color(0xFF3F76E0),
+        secondary: Color(0xFF2AA198),
+        tertiary: Color(0xFF268BD2),
+        surface: Color(0xFFF7F7F5),
+        error: Color(0xFFDC2626),
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: Color(0xFF111827),
+        onError: Colors.white,
+      ),
+      scaffoldBackgroundColor: const Color(0xFFF7F7F5),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        centerTitle: true,
+        titleTextStyle: TextStyle(
+          color: Color(0xFF111827),
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
+        iconTheme: IconThemeData(color: Color(0xFF374151)),
+      ),
+      cardTheme: CardThemeData(
+        color: Colors.white,
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.05),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: const Color(0xFFF9FAFB),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        hintStyle: const TextStyle(color: Color(0xFF9CA3AF)),
+        labelStyle: const TextStyle(color: Color(0xFF6B7280)),
+      ),
+      textTheme: const TextTheme(
+        headlineSmall: TextStyle(
+          color: Color(0xFF111827),
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+        ),
+        bodyMedium: TextStyle(
+          color: Color(0xFF374151),
+          fontSize: 14,
+        ),
+        bodySmall: TextStyle(
+          color: Color(0xFF6B7280),
+          fontSize: 12,
+        ),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: Color(0xFFE5E7EB),
+        thickness: 1,
+        space: 1,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: const Color(0xFFF3F4F6),
+        selectedColor: const Color(0xFF111827),
+        labelStyle: const TextStyle(color: Color(0xFF374151)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: Color(0xFF111827),
+        foregroundColor: Colors.white,
       ),
     );
   }

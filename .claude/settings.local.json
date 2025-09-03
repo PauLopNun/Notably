@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub:*)",
+      "Bash(flutter run:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(flutter packages pub run:*)",
+      "Bash(rg:*)",
+      "Bash(flutter clean:*)",
+      "Bash(findstr:*)",
+      "Bash(flutter analyze:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

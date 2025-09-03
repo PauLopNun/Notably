@@ -53,26 +53,20 @@ class _HomePageState extends ConsumerState<HomePage> {
     final notes = ref.watch(notesProvider);
     
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 1,
-        title: const Text(
-          'Tus notas', 
-          style: TextStyle(
-            color: Color(0xFF22223B), 
-            fontWeight: FontWeight.bold
-          )
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF22223B)),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        elevation: Theme.of(context).appBarTheme.elevation ?? 0.5,
+        title: Text('Tus notas', style: Theme.of(context).appBarTheme.titleTextStyle),
+        iconTheme: Theme.of(context).appBarTheme.iconTheme,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFF4A4E69)),
+            icon: const Icon(Icons.refresh),
             tooltip: 'Actualizar',
             onPressed: _refreshNotes,
           ),
           IconButton(
-            icon: const Icon(Icons.logout, color: Color(0xFF4A4E69)),
+            icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',
             onPressed: () async {
               await Supabase.instance.client.auth.signOut();
@@ -84,21 +78,13 @@ class _HomePageState extends ConsumerState<HomePage> {
         ],
       ),
       body: _isLoading
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(
-                    color: Color(0xFF4A4E69),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Cargando notas...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF9A8C98),
-                    ),
-                  ),
+                  CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(height: 16),
+                  Text('Cargando notas...', style: Theme.of(context).textTheme.bodyMedium),
                 ],
               ),
             )
@@ -107,28 +93,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.note_add,
-                        size: 64,
-                        color: Colors.grey[400],
-                      ),
+                      Icon(Icons.note_add, size: 64, color: Theme.of(context).hintColor),
                       const SizedBox(height: 16),
-                      const Text(
-                        'No hay notas todavía',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Color(0xFF9A8C98),
-                        ),
-                      ),
+                      Text('No hay notas todavía', style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Toca el botón + para crear tu primera nota',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF9A8C98),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      Text('Toca el botón + para crear tu primera nota', style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
                     ],
                   ),
                 )
@@ -195,12 +164,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                 ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF4A4E69),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         onPressed: () async {
           await Navigator.of(context).pushNamed('/editor', arguments: null);
           await ref.read(notesProvider.notifier).loadNotes();
         },
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Theme.of(context).colorScheme.onPrimary),
       ),
     );
   }
