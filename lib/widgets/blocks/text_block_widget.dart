@@ -1,61 +1,137 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/block.dart';
+import 'block_widget_factory.dart';
 
-class TextBlockWidget extends StatelessWidget {
-  final PageBlock block;
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final Function(String) onChanged;
-  final VoidCallback? onEnterPressed;
-  final VoidCallback? onBackspacePressed;
-  final bool readOnly;
+class TextBlockWidget extends BaseBlockWidget {
+  final FocusNode? focusNode;
+  final TextEditingController? textController;
 
   const TextBlockWidget({
     super.key,
-    required this.block,
-    required this.controller,
-    required this.focusNode,
-    required this.onChanged,
-    this.onEnterPressed,
-    this.onBackspacePressed,
-    this.readOnly = false,
-  });
+    required PageBlock block,
+    this.focusNode,
+    this.textController,
+    bool isReadOnly = false,
+    bool isSelected = false,
+    Function(String)? onTextChanged,
+    Function(BlockType)? onTypeChanged,
+    VoidCallback? onDelete,
+    Function(Offset)? onSlashCommand,
+    Function(bool)? onFocusChanged,
+  }) : super(
+          block: block,
+          isReadOnly: isReadOnly,
+          isSelected: isSelected,
+          onTextChanged: onTextChanged,
+          onTypeChanged: onTypeChanged,
+          onDelete: onDelete,
+          onSlashCommand: onSlashCommand,
+          onFocusChanged: onFocusChanged,
+        );
+
+  @override
+  State<TextBlockWidget> createState() => _TextBlockWidgetState();
+}
+
+class _TextBlockWidgetState extends State<TextBlockWidget> with TextBlockMixin {
+  @override
+  void initState() {
+    super.initState();
+    initializeTextBlock(widget.textController, widget.focusNode);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final text = block.content['text'] as String? ?? '';
-    
-    if (controller.text != text) {
-      controller.text = text;
-      controller.selection = TextSelection.collapsed(offset: text.length);
-    }
-
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      readOnly: readOnly,
-      onChanged: onChanged,
-      style: const TextStyle(
-        fontSize: 16,
-        height: 1.5,
-      ),
-      decoration: InputDecoration(
-        hintText: 'Type something...',
-        hintStyle: TextStyle(
-          color: Colors.grey.withOpacity(0.6),
-          fontSize: 16,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      decoration: widget.isSelected ? BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary,
+          width: 2,
         ),
-        border: InputBorder.none,
-        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        borderRadius: BorderRadius.circular(8),
+      ) : null,
+      child: RawKeyboardListener(
+        focusNode: FocusNode(),
+        onKey: handleKeyPress,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Block type indicator
+              Container(
+                width: 24,
+                height: 24,
+                margin: const EdgeInsets.only(top: 4, right: 8),
+                child: Center(
+                  child: Text(
+                    widget.block.type.icon,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+              ),
+              
+              // Text field
+              Expanded(
+                child: buildTextField(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontSize: 16,
+                    height: 1.5,
+                  ),
+                  placeholder: 'Escribe algo...',
+                ),
+              ),
+              
+              // Actions
+              if (widget.isSelected && !widget.isReadOnly)
+                _buildBlockActions(),
+            ],
+          ),
+        ),
       ),
-      maxLines: null,
-      keyboardType: TextInputType.multiline,
-      textInputAction: TextInputAction.newline,
-      onSubmitted: (_) => onEnterPressed?.call(),
-      inputFormatters: [
-        if (onBackspacePressed != null)
-          BackspaceFormatter(onBackspacePressed!),
+    );
+  }
+
+  Widget _buildBlockActions() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Type change button
+        PopupMenuButton<BlockType>(
+          icon: Icon(
+            Icons.more_vert,
+            size: 16,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+          itemBuilder: (context) => BlockType.values
+              .where((type) => type.isTextBlock || type.isListBlock)
+              .map((type) => PopupMenuItem<BlockType>(
+                    value: type,
+                    child: Row(
+                      children: [
+                        Text(type.icon),
+                        const SizedBox(width: 8),
+                        Text(type.displayName),
+                      ],
+                    ),
+                  ))
+              .toList(),
+          onSelected: (type) => widget.onTypeChanged?.call(type),
+        ),
+        
+        // Delete button
+        IconButton(
+          icon: Icon(
+            Icons.delete_outline,
+            size: 16,
+            color: Colors.red.withValues(alpha: 0.8),
+          ),
+          onPressed: widget.onDelete,
+          tooltip: 'Eliminar bloque',
+        ),
       ],
     );
   }

@@ -6,6 +6,9 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   connectivity_plus
   file_selector_windows
+  flutter_webrtc
+  printing
+  share_plus
   url_launcher_windows
 )
 

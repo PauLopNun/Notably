@@ -2,6 +2,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workspace.dart';
 import '../services/workspace_service.dart';
 
+// Service provider
+final workspaceServiceProvider = Provider<WorkspaceService>((ref) => WorkspaceService());
+
+// Individual workspace provider
+final workspaceProvider = FutureProvider.family<Workspace, String>((ref, workspaceId) async {
+  final service = ref.read(workspaceServiceProvider);
+  return service.getWorkspace(workspaceId);
+});
+
+// User's workspaces provider
+final userWorkspacesProvider = FutureProvider<List<Workspace>>((ref) async {
+  final service = ref.read(workspaceServiceProvider);
+  return service.fetchUserWorkspaces();
+});
+
 // State providers for workspace management
 final selectedWorkspaceProvider = StateProvider<Workspace?>((ref) => null);
 

@@ -4,11 +4,27 @@ import '../models/block.dart';
 import '../models/comment.dart';
 import '../models/workspace.dart';
 import '../services/page_service.dart';
+import 'workspace_provider.dart';
+
+// Service provider
+final pageServiceProvider = Provider<PageService>((ref) => PageService(ref.read(workspaceServiceProvider)));
+
+// Individual page provider
+final pageProvider = FutureProvider.family<NotionPage, String>((ref, pageId) async {
+  final service = ref.read(pageServiceProvider);
+  return service.getPage(pageId);
+});
+
+// Workspace pages provider  
+final workspacePagesProvider = FutureProvider.family<List<NotionPage>, String>((ref, workspaceId) async {
+  final service = ref.read(pageServiceProvider);
+  return service.getWorkspacePages(workspaceId);
+});
 
 // State providers for page management
 final selectedPageProvider = StateProvider<NotionPage?>((ref) => null);
 
-final workspacePagesProvider = StateNotifierProvider.family<WorkspacePagesNotifier, AsyncValue<List<NotionPage>>, String>((ref, workspaceId) {
+final workspacePagesNotifierProvider = StateNotifierProvider.family<WorkspacePagesNotifier, AsyncValue<List<NotionPage>>, String>((ref, workspaceId) {
   return WorkspacePagesNotifier(ref.read(pageServiceProvider), workspaceId);
 });
 
@@ -194,6 +210,110 @@ class PageBlocksNotifier extends StateNotifier<AsyncValue<List<PageBlock>>> {
       await loadBlocks(); // Refresh the list
     } catch (e) {
       rethrow;
+    }
+  }
+
+  // Additional methods for notion_page_editor
+  Future<void> reorderBlocks(int oldIndex, int newIndex) async {
+    state.whenData((blocks) {
+      if (oldIndex < 0 || oldIndex >= blocks.length || newIndex < 0 || newIndex >= blocks.length) {
+        return;
+      }
+      
+      final List<PageBlock> updatedBlocks = List.from(blocks);
+      final block = updatedBlocks.removeAt(oldIndex);
+      updatedBlocks.insert(newIndex, block);
+      
+      // Update state optimistically
+      state = AsyncValue.data(updatedBlocks);
+      
+      // Update positions in backend
+      _updateBlockPositions(updatedBlocks);
+    });
+  }
+
+  Future<void> updateBlockContent(String blockId, Map<String, dynamic> content) async {
+    state.whenData((blocks) async {
+      final blockIndex = blocks.indexWhere((b) => b.id == blockId);
+      if (blockIndex != -1) {
+        final updatedBlock = blocks[blockIndex].copyWith(content: content);
+        final updatedBlocks = List<PageBlock>.from(blocks);
+        updatedBlocks[blockIndex] = updatedBlock;
+        
+        // Update state optimistically
+        state = AsyncValue.data(updatedBlocks);
+        
+        try {
+          await _pageService.updateBlock(updatedBlock);
+        } catch (e) {
+          // Revert on error
+          await loadBlocks();
+          rethrow;
+        }
+      }
+    });
+  }
+
+  Future<void> changeBlockType(String blockId, BlockType newType) async {
+    state.whenData((blocks) async {
+      final blockIndex = blocks.indexWhere((b) => b.id == blockId);
+      if (blockIndex != -1) {
+        final block = blocks[blockIndex];
+        final updatedBlock = block.copyWith(type: newType);
+        final updatedBlocks = List<PageBlock>.from(blocks);
+        updatedBlocks[blockIndex] = updatedBlock;
+        
+        // Update state optimistically
+        state = AsyncValue.data(updatedBlocks);
+        
+        try {
+          await _pageService.updateBlock(updatedBlock);
+        } catch (e) {
+          // Revert on error
+          await loadBlocks();
+          rethrow;
+        }
+      }
+    });
+  }
+
+  Future<void> addBlock({
+    String? parentBlockId,
+    required BlockType type,
+    required Map<String, dynamic> content,
+    int? position,
+  }) async {
+    try {
+      final newPosition = position ?? (state.value?.length ?? 0);
+      final block = await _pageService.createBlock(
+        pageId: pageId,
+        parentBlockId: parentBlockId,
+        type: type,
+        content: content,
+        position: newPosition,
+      );
+      
+      // Add to current state
+      state.whenData((blocks) {
+        final updatedBlocks = List<PageBlock>.from(blocks)..add(block);
+        state = AsyncValue.data(updatedBlocks);
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> _updateBlockPositions(List<PageBlock> blocks) async {
+    for (int i = 0; i < blocks.length; i++) {
+      if (blocks[i].position != i) {
+        try {
+          final updatedBlock = blocks[i].copyWith(position: i);
+          await _pageService.updateBlock(updatedBlock);
+        } catch (e) {
+          // Continue with other blocks even if one fails
+          print('Failed to update block position: $e');
+        }
+      }
     }
   }
 

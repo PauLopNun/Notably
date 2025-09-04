@@ -8,7 +8,8 @@
       "Bash(rg:*)",
       "Bash(flutter clean:*)",
       "Bash(findstr:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(flutter build:*)"
     ],
     "deny": [],
     "ask": []

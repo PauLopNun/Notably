@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/workspace.dart';
-import '../models/page.dart';
 
 final workspaceServiceProvider = Provider<WorkspaceService>((ref) => WorkspaceService());
 
@@ -36,6 +34,38 @@ class WorkspaceService {
       }).toList();
     } catch (e) {
       throw Exception('Failed to fetch workspaces: $e');
+    }
+  }
+
+  Future<Workspace> getWorkspace(String workspaceId) async {
+    try {
+      final user = _client.auth.currentUser;
+      if (user == null) throw Exception('User not authenticated');
+
+      final response = await _client
+          .from('workspaces')
+          .select('*')
+          .eq('id', workspaceId)
+          .single();
+
+      // Check if user has access to this workspace
+      final memberResponse = await _client
+          .from('workspace_members')
+          .select('role')
+          .eq('workspace_id', workspaceId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (memberResponse == null) {
+        throw Exception('Access denied to workspace');
+      }
+
+      return Workspace.fromMap({
+        ...response,
+        'user_role': memberResponse['role'],
+      });
+    } catch (e) {
+      throw Exception('Failed to fetch workspace: $e');
     }
   }
 
@@ -204,8 +234,6 @@ class WorkspaceService {
       case WorkspaceRole.viewer:
         return true;
       case WorkspaceRole.member:
-        return userRole.canEdit();
-      case WorkspaceRole.editor:
         return userRole.canEdit();
       case WorkspaceRole.admin:
         return userRole.canAdmin();

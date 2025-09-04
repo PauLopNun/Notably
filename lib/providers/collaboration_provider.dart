@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/enhanced_realtime_service.dart';
+import '../services/collaborative_editor_service.dart';
 import '../models/page.dart';
 import '../models/block.dart';
 import '../models/comment.dart';
+import '../models/collaborative_operation.dart';
 
 final realtimeServiceProvider = Provider<EnhancedRealtimeService>((ref) => EnhancedRealtimeService());
+final collaborativeEditorProvider = Provider<CollaborativeEditorService>((ref) => CollaborativeEditorService());
 
 final collaborationProvider = StateNotifierProvider<CollaborationNotifier, CollaborationState>((ref) {
   return CollaborationNotifier(ref.read(realtimeServiceProvider));
@@ -131,4 +134,20 @@ final commentsStreamProvider = StreamProvider<Comment>((ref) {
 final userPresenceStreamProvider = StreamProvider<List<UserPresence>>((ref) {
   final realtimeService = ref.read(realtimeServiceProvider);
   return realtimeService.userPresence;
+});
+
+// New Collaborative Editor Stream Providers
+final collaborativeOperationsStreamProvider = StreamProvider<CollaborativeOperation>((ref) {
+  final collaborativeService = ref.read(collaborativeEditorProvider);
+  return collaborativeService.operationsStream;
+});
+
+final realTimeCursorsStreamProvider = StreamProvider<List<CursorPosition>>((ref) {
+  final collaborativeService = ref.read(collaborativeEditorProvider);
+  return collaborativeService.cursorsStream;
+});
+
+final collaboratorsStreamProvider = StreamProvider<List<String>>((ref) {
+  final collaborativeService = ref.read(collaborativeEditorProvider);
+  return collaborativeService.collaboratorsStream;
 });

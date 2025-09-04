@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'package:flutter_quill/flutter_quill.dart';
 import '../models/note.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/note_provider.dart';
-import '../services/realtime_collab_service.dart';
+import '../widgets/collaborative_text_editor.dart';
+import 'dart:convert';
 
 class NoteEditorPage extends StatefulWidget {
   final Note? note;
@@ -16,71 +15,44 @@ class NoteEditorPage extends StatefulWidget {
 }
 
 class _NoteEditorPageState extends State<NoteEditorPage> {
-  late QuillController _quillController;
   final _titleController = TextEditingController();
   bool _isSaving = false;
   bool _hasChanges = false;
-  RealtimeCollabService? _collab;
-  StreamSubscription<dynamic>? _deltaSub;
-  Timer? _debounce;
+  String _currentContent = '';
 
   @override
   void initState() {
     super.initState();
-    _quillController = widget.note != null
-      ? QuillController(
-          document: Document.fromJson(widget.note!.content.isNotEmpty
-              ? widget.note!.content
-              : []),
-          selection: const TextSelection.collapsed(offset: 0),
-        )
-      : QuillController.basic();
     _titleController.text = widget.note?.title ?? '';
+    _currentContent = widget.note?.content.isNotEmpty == true 
+        ? jsonEncode(widget.note!.content)
+        : '';
     
-    // Listen for changes
-    _titleController.addListener(_onContentChanged);
-    _quillController.addListener(_onContentChanged);
-
-    // Setup realtime collab only for existing notes
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (widget.note != null) {
-        _collab = RealtimeCollabService();
-        await _collab!.joinDocument(widget.note!.id);
-        _deltaSub = _collab!.incomingContentStream.listen((content) {
-          try {
-            _quillController = QuillController(
-              document: Document.fromJson(content),
-              selection: const TextSelection.collapsed(offset: 0),
-            );
-            setState(() {});
-          } catch (_) {}
-        });
-      }
-    });
+    // Listen for title changes
+    _titleController.addListener(_onTitleChanged);
   }
 
-  void _onContentChanged() {
+  void _onTitleChanged() {
     if (!_hasChanges) {
       setState(() {
         _hasChanges = true;
       });
     }
-    // Debounced full-content sync
-    if (_collab != null && widget.note != null) {
-      _debounce?.cancel();
-      _debounce = Timer(const Duration(milliseconds: 500), () {
-        _collab!.sendFullContent(_quillController.document.toDelta().toJson());
+  }
+
+  void _onContentChanged(String content) {
+    _currentContent = content;
+    if (!_hasChanges) {
+      setState(() {
+        _hasChanges = true;
       });
     }
   }
 
+
   @override
   void dispose() {
     _titleController.dispose();
-    _quillController.dispose();
-    _deltaSub?.cancel();
-    _collab?.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
@@ -93,7 +65,9 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
 
     try {
       final title = _titleController.text.trim();
-      final content = _quillController.document.toDelta().toJson();
+      final content = _currentContent.isNotEmpty 
+          ? jsonDecode(_currentContent) 
+          : <dynamic>[];
       
       if (title.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -283,62 +257,11 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                     ),
                     Divider(height: 1, thickness: 1, color: Theme.of(context).dividerColor),
                     
-                    // Simple toolbar with basic formatting
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(0),
-                          topRight: Radius.circular(0),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.format_bold, size: 20),
-                            onPressed: () => _quillController.formatSelection(Attribute.bold),
-                            tooltip: 'Negrita',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.format_italic, size: 20),
-                            onPressed: () => _quillController.formatSelection(Attribute.italic),
-                            tooltip: 'Cursiva',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.format_underline, size: 20),
-                            onPressed: () => _quillController.formatSelection(Attribute.underline),
-                            tooltip: 'Subrayado',
-                          ),
-                          const VerticalDivider(width: 1),
-                          IconButton(
-                            icon: const Icon(Icons.format_list_bulleted, size: 20),
-                            onPressed: () => _quillController.formatSelection(Attribute.ul),
-                            tooltip: 'Lista',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.format_list_numbered, size: 20),
-                            onPressed: () => _quillController.formatSelection(Attribute.ol),
-                            tooltip: 'Lista numerada',
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.format_quote, size: 20),
-                            onPressed: () => _quillController.formatSelection(Attribute.blockQuote),
-                            tooltip: 'Cita',
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Quill editor
+                    // Collaborative Text Editor
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: QuillEditor(
-                          controller: _quillController,
-                          focusNode: FocusNode(),
-                          scrollController: ScrollController(),
-                        ),
+                      child: CollaborativeTextEditor(
+                        note: widget.note,
+                        onContentChanged: _onContentChanged,
                       ),
                     ),
                   ],

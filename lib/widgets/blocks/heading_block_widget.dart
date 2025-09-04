@@ -1,92 +1,180 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/block.dart';
+import 'block_widget_factory.dart';
 
-class HeadingBlockWidget extends StatelessWidget {
-  final PageBlock block;
-  final TextEditingController controller;
-  final FocusNode focusNode;
-  final Function(String) onChanged;
-  final VoidCallback? onEnterPressed;
-  final bool readOnly;
+class HeadingBlockWidget extends BaseBlockWidget {
+  final FocusNode? focusNode;
+  final TextEditingController? textController;
 
   const HeadingBlockWidget({
     super.key,
-    required this.block,
-    required this.controller,
-    required this.focusNode,
-    required this.onChanged,
-    this.onEnterPressed,
-    this.readOnly = false,
-  });
+    required PageBlock block,
+    this.focusNode,
+    this.textController,
+    bool isReadOnly = false,
+    bool isSelected = false,
+    Function(String)? onTextChanged,
+    Function(BlockType)? onTypeChanged,
+    VoidCallback? onDelete,
+    Function(Offset)? onSlashCommand,
+    Function(bool)? onFocusChanged,
+  }) : super(
+          block: block,
+          isReadOnly: isReadOnly,
+          isSelected: isSelected,
+          onTextChanged: onTextChanged,
+          onTypeChanged: onTypeChanged,
+          onDelete: onDelete,
+          onSlashCommand: onSlashCommand,
+          onFocusChanged: onFocusChanged,
+        );
+
+  @override
+  State<HeadingBlockWidget> createState() => _HeadingBlockWidgetState();
+}
+
+class _HeadingBlockWidgetState extends State<HeadingBlockWidget> with TextBlockMixin {
+  @override
+  void initState() {
+    super.initState();
+    initializeTextBlock(widget.textController, widget.focusNode);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final text = block.content['text'] as String? ?? '';
-    
-    if (controller.text != text) {
-      controller.text = text;
-      controller.selection = TextSelection.collapsed(offset: text.length);
-    }
-
-    final textStyle = _getTextStyleForHeading();
-    final hintText = _getHintTextForHeading();
-
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      readOnly: readOnly,
-      onChanged: onChanged,
-      style: textStyle,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: textStyle.copyWith(
-          color: Colors.grey.withOpacity(0.6),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: widget.isSelected ? BoxDecoration(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary,
+          width: 2,
         ),
-        border: InputBorder.none,
-        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        borderRadius: BorderRadius.circular(8),
+      ) : null,
+      child: RawKeyboardListener(
+        focusNode: FocusNode(),
+        onKey: handleKeyPress,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Block type indicator
+              Container(
+                width: 32,
+                height: 32,
+                margin: const EdgeInsets.only(top: 4, right: 12),
+                child: Center(
+                  child: Text(
+                    widget.block.type.icon,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              
+              // Text field
+              Expanded(
+                child: buildTextField(
+                  style: _getTextStyleForHeading(context),
+                  placeholder: _getHintTextForHeading(),
+                  maxLines: null,
+                ),
+              ),
+              
+              // Actions
+              if (widget.isSelected && !widget.isReadOnly)
+                _buildBlockActions(),
+            ],
+          ),
+        ),
       ),
-      maxLines: null,
-      keyboardType: TextInputType.text,
-      textInputAction: TextInputAction.done,
-      onSubmitted: (_) => onEnterPressed?.call(),
     );
   }
 
-  TextStyle _getTextStyleForHeading() {
-    switch (block.type) {
+  TextStyle _getTextStyleForHeading(BuildContext context) {
+    final baseColor = Theme.of(context).colorScheme.onSurface;
+    
+    switch (widget.block.type) {
       case BlockType.heading1:
-        return const TextStyle(
+        return TextStyle(
           fontSize: 32,
           fontWeight: FontWeight.bold,
           height: 1.2,
+          color: baseColor,
         );
       case BlockType.heading2:
-        return const TextStyle(
+        return TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
           height: 1.3,
+          color: baseColor,
         );
       case BlockType.heading3:
-        return const TextStyle(
+        return TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           height: 1.4,
+          color: baseColor,
         );
       default:
-        return const TextStyle(fontSize: 16);
+        return TextStyle(fontSize: 16, color: baseColor);
     }
   }
 
   String _getHintTextForHeading() {
-    switch (block.type) {
+    switch (widget.block.type) {
       case BlockType.heading1:
-        return 'Heading 1';
+        return 'Encabezado 1';
       case BlockType.heading2:
-        return 'Heading 2';
+        return 'Encabezado 2';
       case BlockType.heading3:
-        return 'Heading 3';
+        return 'Encabezado 3';
       default:
-        return 'Heading';
+        return 'Encabezado';
     }
+  }
+
+  Widget _buildBlockActions() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Type change button
+        PopupMenuButton<BlockType>(
+          icon: Icon(
+            Icons.more_vert,
+            size: 16,
+            color: Theme.of(context).colorScheme.outline,
+          ),
+          itemBuilder: (context) => [
+            BlockType.heading1,
+            BlockType.heading2,
+            BlockType.heading3,
+            BlockType.paragraph,
+          ].map((type) => PopupMenuItem<BlockType>(
+                value: type,
+                child: Row(
+                  children: [
+                    Text(type.icon),
+                    const SizedBox(width: 8),
+                    Text(type.displayName),
+                  ],
+                ),
+              )).toList(),
+          onSelected: (type) => widget.onTypeChanged?.call(type),
+        ),
+        
+        // Delete button
+        IconButton(
+          icon: Icon(
+            Icons.delete_outline,
+            size: 16,
+            color: Colors.red.withValues(alpha: 0.8),
+          ),
+          onPressed: widget.onDelete,
+          tooltip: 'Eliminar bloque',
+        ),
+      ],
+    );
   }
 }

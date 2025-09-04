@@ -27,41 +27,53 @@ This project was developed using **Flutter**, **Supabase**, and **Riverpod**. It
 
 ## 🎯 Project Goal
 
-To develop a simplified yet powerful note-taking app that demonstrates a professional and scalable architecture. This project serves as a comprehensive portfolio piece, highlighting a modern full-stack development approach.
+To develop a **Notion-like collaborative note-taking application** with real-time editing, workspace organization, and advanced formatting capabilities. This project demonstrates a professional full-stack development approach with modern technologies and scalable architecture suitable for team collaboration and academic use.
 
 ---
 
 ## ✨ Key Features
 
-### 🔹 Authentication and Sessions
-> User registration, login, and persistent sessions handled by **Supabase Auth**.
+### 🔹 Real-time Collaborative Editing
+> **Google Docs-style collaboration** with live cursors, instant synchronization, and conflict resolution using **Yjs** and **WebRTC**.
 
-### 🔹 Cloud Synchronization
-> Create, edit, and view notes with real-time synchronization using **Supabase Database**.
+### 🔹 Workspace Organization
+> **Subject-based workspaces** for organizing notes by courses, projects, or topics with hierarchical page structure.
 
-### 🔹 Rich Text Editor
-> Advanced text editing with **Flutter Quill** supporting formatting, lists, quotes, and more.
+### 🔹 Advanced Block-based Editor
+> **Notion-style editor** with drag & drop blocks, rich formatting, code blocks, tables, and multimedia support.
 
-### 🔹 State Management
-> Efficient and predictable application state managed with **Riverpod**.
+### 🔹 Document Export & Sharing
+> **Multi-format export** to PDF, Markdown, Word, and HTML with customizable templates and sharing options.
+
+### 🔹 Authentication & Permissions
+> **Secure user management** with invitation system, role-based permissions, and collaborative workspace access.
 
 ### 🔹 Cross-Platform Experience
-> A single codebase that runs on Web, Android, and iOS.
-
-### 🔹 Modern UI/UX
-> Beautiful and intuitive interface built with **Material Design 3**.
+> **Responsive design** optimized for Web, Android, and iOS with consistent user experience across devices.
 
 ---
 
 ## 💻 Technologies & Tools
 
-- **Flutter & Dart** → The UI framework and programming language
-- **Supabase** → Backend-as-a-Service (Auth, Database, Realtime)
-- **Riverpod** → State management solution
-- **Flutter Quill** → Rich text editor for note content
-- **Material Design 3** → Modern and polished UI design language
-- **GitHub** → Version control
-- **Visual Studio Code** → Development environment
+### Core Stack
+- **Flutter & Dart** → Cross-platform UI framework and programming language
+- **Supabase** → Backend-as-a-Service (Auth, Database, Realtime, Storage)
+- **Riverpod** → Advanced state management with dependency injection
+
+### Collaboration & Real-time
+- **Yjs** → Conflict-free replicated data types for collaborative editing
+- **WebRTC** → Peer-to-peer communication for real-time collaboration
+- **Supabase Realtime** → WebSocket-based real-time synchronization
+
+### UI & Editor
+- **Material Design 3** → Modern and adaptive UI design system
+- **Custom Block Editor** → Notion-inspired modular content blocks
+- **Flutter Quill** → Rich text editing foundation
+
+### Export & Integration
+- **PDF Generation** → Document export with custom styling
+- **Markdown Support** → Import/export compatibility
+- **File System Access** → Cross-platform file operations
 
 ---
 
@@ -126,29 +138,66 @@ For comprehensive setup instructions, including database schema and Supabase con
 
 ## 🛣️ Roadmap
 
-### ✅ Completed Features
-- [x] **Basic Authentication:** Implement login and registration with Supabase Auth
-- [x] **Persistent Sessions:** Maintain user login status between app restarts
-- [x] **Note Creation:** Allow authenticated users to create and save notes
-- [x] **Note Editing:** Implement a rich text editor for modifying notes
-- [x] **Note Management:** View, edit, and delete notes with proper error handling
-- [x] **Cloud Sync:** Real-time synchronization with Supabase Database
-- [x] **Modern UI:** Beautiful interface with Material Design 3
-- [x] **State Management:** Efficient state handling with Riverpod
+### ✅ Phase 1: Foundation (Completed)
+- [x] **Basic Authentication:** Supabase Auth with email/password login
+- [x] **Persistent Sessions:** Automatic session restoration
+- [x] **Basic Note CRUD:** Create, read, update, delete operations
+- [x] **Rich Text Editor:** Flutter Quill integration
+- [x] **Cloud Synchronization:** Supabase Database integration
+- [x] **Material Design 3:** Modern UI foundation
+- [x] **State Management:** Riverpod provider architecture
 
-### 🚧 In Progress
-- [ ] **Enhanced Editor:** More formatting options and better UX
-- [ ] **Search Functionality:** Robust search across all user notes
-- [ ] **Performance Optimization:** Better loading states and caching
+### 🚧 Phase 2: Real-time Collaboration (In Progress)
+- [x] **Collaborative Editor Service:** Real-time sync with Operational Transformation *(Implemented)*
+- [x] **Live Cursors:** Real-time cursor positions and user presence *(Implemented)*
+- [x] **Conflict Resolution:** Automatic merge of concurrent edits *(Implemented)*
+- [x] **Invitation System:** Invite collaborators to documents *(Implemented)*
+- [x] **Permission Management:** Role-based access control with RLS *(Implemented)*
+- [x] **Database Schema:** Tables for operations, collaborators, and presence *(Implemented)*
+- [ ] **WebRTC Communication:** Peer-to-peer real-time sync *(Not Implemented)*
 
-### 🔮 Future Features
-- [ ] **Real-time Collaboration:** Enable multiple users to edit the same note
-- [ ] **Workspaces:** Add shared spaces for collaborative note-taking
-- [ ] **Advanced Formatting:** Tables, code blocks, and media embedding
-- [ ] **Offline Support:** Local caching and offline editing
-- [ ] **Export Options:** PDF, Markdown, and other export formats
-- [ ] **Themes:** Dark mode and customizable color schemes
-- [ ] **Mobile Features:** Push notifications and mobile-specific optimizations
+### 🚧 Phase 3: Advanced Editor (In Progress)
+- [x] **Block-based Architecture:** Notion-style modular content blocks *(Implemented)*
+- [x] **Factory Pattern:** Extensible widget factory for all block types *(Implemented)*
+- [x] **Text & Heading Blocks:** Paragraph and heading blocks with styling *(Implemented)*
+- [x] **Slash Commands:** Quick block insertion with "/" commands and search *(Implemented)*
+- [x] **Block Selection:** Visual selection and action menus *(Implemented)*
+- [x] **Image Blocks:** Image upload, display, and caption support *(Implemented)*
+- [x] **Page Editor:** Complete Notion-like page editing experience *(Implemented)*
+- [ ] **Drag & Drop:** Reorder blocks with intuitive interactions *(Not Implemented)*
+- [ ] **Advanced Blocks:** Tables, code blocks, callouts, embeds *(Partially Implemented)*
+- [ ] **Templates:** Pre-built page templates for different use cases *(Not Implemented)*
+
+### 🚧 Phase 4: Workspace Organization (In Progress)
+- [x] **Subject Workspaces:** Organize by courses/projects with custom icons *(Implemented)*
+- [x] **Academic Templates:** Pre-built templates for different subjects *(Implemented)*
+- [x] **Workspace Navigation:** Sidebar with hierarchical navigation *(Implemented)*
+- [x] **Page Management:** Create, organize, and manage pages within workspaces *(Implemented)*
+- [x] **Template System:** Templates for Math, Science, History, Literature, etc. *(Implemented)*
+- [x] **Modern Interface:** Clean, organized workspace-based layout *(Implemented)*
+- [ ] **Hierarchical Pages:** Nested page structure with breadcrumbs *(Partially Implemented)*
+- [ ] **Search & Filter:** Advanced search across all content *(Not Implemented)*
+- [ ] **Favorites & Recent:** Quick access to important content *(Not Implemented)*
+
+### ✅ Phase 5: Export & Integration (Completed)
+- [x] **PDF Export:** High-quality PDF generation with multiple themes *(Implemented)*
+- [x] **Markdown Export:** Standard markdown compatibility with metadata *(Implemented)*
+- [x] **HTML Export:** Static website generation with CSS themes *(Implemented)*
+- [x] **Plain Text Export:** Simple text format for universal compatibility *(Implemented)*
+- [x] **JSON Export:** Structured data export for backup and migration *(Implemented)*
+- [x] **Export Dialog:** User-friendly interface with format options *(Implemented)*
+- [x] **File Sharing:** Share exported files via platform share sheet *(Implemented)*
+- [x] **Print Support:** Direct printing of pages with proper formatting *(Implemented)*
+- [ ] **Bulk Export:** Export entire workspaces *(Partially Implemented)*
+- [ ] **Import Tools:** Import from other note-taking apps *(Not Implemented)*
+
+### 🎨 Phase 6: Polish & Performance (Planned)
+- [ ] **Dark/Light Themes:** Customizable appearance *(Not Implemented)*
+- [ ] **Offline Support:** Local caching and sync *(Not Implemented)*
+- [ ] **Performance Optimization:** Lazy loading and caching *(Not Implemented)*
+- [ ] **Mobile Optimization:** Touch-friendly interactions *(Not Implemented)*
+- [ ] **Keyboard Shortcuts:** Power user productivity features *(Not Implemented)*
+- [ ] **Accessibility:** Screen reader and keyboard navigation support *(Not Implemented)*
 
 ---
 
