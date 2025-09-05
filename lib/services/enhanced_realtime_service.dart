@@ -156,11 +156,9 @@ class EnhancedRealtimeService {
   void _handlePageUpdate(PostgresChangePayload payload) {
     try {
       final newRecord = payload.newRecord;
-      if (newRecord != null) {
-        final page = NotionPage.fromMap(newRecord);
-        _pageUpdatesController.add(page);
-      }
-    } catch (e) {
+      final page = NotionPage.fromMap(newRecord);
+      _pageUpdatesController.add(page);
+        } catch (e) {
       if (kDebugMode) {
         print('_handlePageUpdate error: $e');
       }
@@ -171,16 +169,12 @@ class EnhancedRealtimeService {
     try {
       if (payload.eventType == PostgresChangeEvent.delete) {
         final oldRecord = payload.oldRecord;
-        if (oldRecord != null) {
-          _blockDeletedController.add(oldRecord['id']);
-        }
-      } else {
+        _blockDeletedController.add(oldRecord['id']);
+            } else {
         final newRecord = payload.newRecord;
-        if (newRecord != null) {
-          final block = PageBlock.fromMap(newRecord);
-          _blockUpdatesController.add(block);
-        }
-      }
+        final block = PageBlock.fromMap(newRecord);
+        _blockUpdatesController.add(block);
+            }
     } catch (e) {
       if (kDebugMode) {
         print('_handleBlockChange error: $e');
@@ -191,11 +185,9 @@ class EnhancedRealtimeService {
   void _handleNewComment(PostgresChangePayload payload) {
     try {
       final newRecord = payload.newRecord;
-      if (newRecord != null) {
-        final comment = Comment.fromMap(newRecord);
-        _commentsController.add(comment);
-      }
-    } catch (e) {
+      final comment = Comment.fromMap(newRecord);
+      _commentsController.add(comment);
+        } catch (e) {
       if (kDebugMode) {
         print('_handleNewComment error: $e');
       }
@@ -204,35 +196,52 @@ class EnhancedRealtimeService {
   
   void _handlePresenceSync(RealtimePresenceSyncPayload presences) {
     _activeUsers.clear();
-    // Handle based on the actual payload structure
-    if (presences.joins.isNotEmpty) {
-      for (final join in presences.joins) {
-        try {
-          final userPresence = UserPresence.fromMap(join.payload);
-          _activeUsers[join.key] = userPresence;
-        } catch (e) {
-          if (kDebugMode) print('Error handling presence sync: $e');
+    // Handle based on the actual payload structure from newer Supabase versions
+    try {
+      final presenceMap = presences as Map<String, dynamic>;
+      presenceMap.forEach((key, value) {
+        if (value is Map<String, dynamic>) {
+          try {
+            final userPresence = UserPresence.fromMap(value);
+            _activeUsers[key] = userPresence;
+          } catch (e) {
+            if (kDebugMode) print('Error parsing user presence: $e');
+          }
         }
-      }
+      });
+    } catch (e) {
+      if (kDebugMode) print('Error handling presence sync: $e');
     }
     _userPresenceController.add(_activeUsers.values.toList());
   }
   
   void _handlePresenceJoin(RealtimePresenceJoinPayload joins) {
-    for (final join in joins.joins) {
-      try {
-        final userPresence = UserPresence.fromMap(join.payload);
-        _activeUsers[join.key] = userPresence;
-      } catch (e) {
-        if (kDebugMode) print('Error handling presence join: $e');
-      }
+    try {
+      final joinMap = joins as Map<String, dynamic>;
+      joinMap.forEach((key, value) {
+        if (value is Map<String, dynamic>) {
+          try {
+            final userPresence = UserPresence.fromMap(value);
+            _activeUsers[key] = userPresence;
+          } catch (e) {
+            if (kDebugMode) print('Error parsing join presence: $e');
+          }
+        }
+      });
+    } catch (e) {
+      if (kDebugMode) print('Error handling presence join: $e');
     }
     _userPresenceController.add(_activeUsers.values.toList());
   }
   
   void _handlePresenceLeave(RealtimePresenceLeavePayload leaves) {
-    for (final leave in leaves.leaves) {
-      _activeUsers.remove(leave.key);
+    try {
+      final leaveMap = leaves as Map<String, dynamic>;
+      leaveMap.forEach((key, value) {
+        _activeUsers.remove(key);
+      });
+    } catch (e) {
+      if (kDebugMode) print('Error handling presence leave: $e');
     }
     _userPresenceController.add(_activeUsers.values.toList());
   }

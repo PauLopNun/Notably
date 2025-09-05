@@ -215,20 +215,26 @@ class PageBlocksNotifier extends StateNotifier<AsyncValue<List<PageBlock>>> {
 
   // Additional methods for notion_page_editor
   Future<void> reorderBlocks(int oldIndex, int newIndex) async {
-    state.whenData((blocks) {
-      if (oldIndex < 0 || oldIndex >= blocks.length || newIndex < 0 || newIndex >= blocks.length) {
+    await state.whenData((blocks) async {
+      if (oldIndex < 0 || oldIndex >= blocks.length || newIndex < 0 || newIndex >= blocks.length || oldIndex == newIndex) {
         return;
+      }
+      
+      // Adjust newIndex if moving down
+      int adjustedNewIndex = newIndex;
+      if (oldIndex < newIndex) {
+        adjustedNewIndex = newIndex - 1;
       }
       
       final List<PageBlock> updatedBlocks = List.from(blocks);
       final block = updatedBlocks.removeAt(oldIndex);
-      updatedBlocks.insert(newIndex, block);
+      updatedBlocks.insert(adjustedNewIndex, block);
       
       // Update state optimistically
       state = AsyncValue.data(updatedBlocks);
       
       // Update positions in backend
-      _updateBlockPositions(updatedBlocks);
+      await _updateBlockPositions(updatedBlocks);
     });
   }
 
@@ -277,21 +283,9 @@ class PageBlocksNotifier extends StateNotifier<AsyncValue<List<PageBlock>>> {
     });
   }
 
-  Future<void> addBlock({
-    String? parentBlockId,
-    required BlockType type,
-    required Map<String, dynamic> content,
-    int? position,
-  }) async {
+  Future<void> addBlock(PageBlock block) async {
     try {
-      final newPosition = position ?? (state.value?.length ?? 0);
-      final block = await _pageService.createBlock(
-        pageId: pageId,
-        parentBlockId: parentBlockId,
-        type: type,
-        content: content,
-        position: newPosition,
-      );
+      await _pageService.updateBlock(block);
       
       // Add to current state
       state.whenData((blocks) {

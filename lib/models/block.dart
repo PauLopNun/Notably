@@ -34,19 +34,6 @@ class PageBlock with _$PageBlock {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'page_id': pageId,
-      'parent_block_id': parentBlockId,
-      'type': type.value,
-      'content': content,
-      'properties': properties,
-      'position': position,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
-  }
 }
 
 // Block types enum

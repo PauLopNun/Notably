@@ -6,6 +6,7 @@ import '../models/block.dart';
 import '../models/page.dart';
 import '../providers/page_provider.dart';
 import '../providers/collaboration_provider.dart';
+import '../providers/favorites_provider.dart';
 import 'blocks/block_widget_factory.dart';
 import 'notion_slash_menu.dart';
 
@@ -116,6 +117,24 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
                   onChanged: _onPageTitleChanged,
                 ),
               ),
+              
+              // Favorite button
+              if (!widget.isReadOnly)
+                Consumer(
+                  builder: (context, ref, child) {
+                    final isFavorite = ref.watch(isFavoriteProvider(widget.page.id));
+                    return IconButton(
+                      onPressed: () {
+                        ref.read(favoritesProvider.notifier).toggleFavorite(widget.page);
+                      },
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : Theme.of(context).colorScheme.outline,
+                      ),
+                      tooltip: isFavorite ? 'Quitar de favoritas' : 'Agregar a favoritas',
+                    );
+                  },
+                ),
             ],
           ),
           
@@ -171,6 +190,32 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: ReorderableColumn(
         onReorder: _onBlocksReordered,
+        buildDraggableFeedback: (context, constraints, child) =>
+            Material(
+              color: Colors.transparent,
+              child: Transform.scale(
+                scale: 1.05,
+                child: Container(
+                  constraints: constraints,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).colorScheme.primary.withAlpha(50),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: child,
+                ),
+              ),
+            ),
         children: blocks
             .map((block) => _buildBlockItem(block))
             .toList(),
@@ -214,52 +259,108 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
   }
 
   Widget _buildBlockItem(PageBlock block) {
+    final isSelected = _selectedBlockId == block.id;
+    
     return Container(
       key: ValueKey(block.id),
       margin: const EdgeInsets.only(bottom: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(6),
+        border: isSelected ? Border.all(
+          color: Theme.of(context).colorScheme.primary.withAlpha(100),
+          width: 1,
+        ) : null,
+        color: isSelected 
+          ? Theme.of(context).colorScheme.primary.withAlpha(20)
+          : null,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Drag Handle
           if (!widget.isReadOnly)
-            GestureDetector(
-              onTap: () => _selectBlock(block.id),
-              child: Container(
-                width: 24,
-                height: 24,
-                margin: const EdgeInsets.only(top: 8, right: 8),
-                child: Icon(
-                  Icons.drag_indicator,
-                  size: 16,
-                  color: _selectedBlockId == block.id
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.outline.withAlpha(128),
+            MouseRegion(
+              cursor: SystemMouseCursors.grab,
+              child: GestureDetector(
+                onTap: () => _selectBlock(block.id),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 24,
+                  height: 32,
+                  margin: const EdgeInsets.only(top: 4, right: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: isSelected 
+                      ? Theme.of(context).colorScheme.primary.withAlpha(40)
+                      : Colors.transparent,
+                  ),
+                  child: Icon(
+                    Icons.drag_indicator,
+                    size: 16,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.outline.withAlpha(150),
+                  ),
                 ),
               ),
             ),
           
           // Block Content
           Expanded(
-            child: BlockWidgetFactory.create(
-              block: block,
-              focusNode: _focusNodes[block.id]!,
-              textController: _textControllers[block.id],
-              isReadOnly: widget.isReadOnly,
-              isSelected: _selectedBlockId == block.id,
-              onTextChanged: (text) => _onBlockTextChanged(block.id, text),
-              onTypeChanged: (type) => _onBlockTypeChanged(block.id, type),
-              onDelete: () => _deleteBlock(block.id),
-              onSlashCommand: (offset) => _showSlashMenu(block.id, offset),
-              onFocusChanged: (hasFocus) {
-                if (hasFocus) {
-                  _selectBlock(block.id);
-                } else if (_selectedBlockId == block.id) {
-                  setState(() {
-                    _selectedBlockId = null;
-                  });
-                }
-              },
+            child: Container(
+              padding: isSelected 
+                ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
+                : EdgeInsets.zero,
+              child: BlockWidgetFactory.create(
+                block: block,
+                focusNode: _focusNodes[block.id]!,
+                textController: _textControllers[block.id],
+                isReadOnly: widget.isReadOnly,
+                isSelected: isSelected,
+                onTextChanged: (text) => _onBlockTextChanged(block.id, text),
+                onTypeChanged: (type) => _onBlockTypeChanged(block.id, type),
+                onDelete: () => _deleteBlock(block.id),
+                onSlashCommand: (offset) => _showSlashMenu(block.id, offset),
+                onFocusChanged: (hasFocus) {
+                  if (hasFocus) {
+                    _selectBlock(block.id);
+                  } else if (_selectedBlockId == block.id) {
+                    setState(() {
+                      _selectedBlockId = null;
+                    });
+                  }
+                },
+              ),
             ),
+          ),
+          
+          // Block Actions (show on hover/selection)
+          if (!widget.isReadOnly && isSelected)
+            _buildBlockActions(block),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlockActions(PageBlock block) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Duplicate Block
+          IconButton(
+            icon: const Icon(Icons.content_copy, size: 16),
+            onPressed: () => _duplicateBlock(block),
+            tooltip: 'Duplicar bloque',
+            visualDensity: VisualDensity.compact,
+          ),
+          // Delete Block
+          IconButton(
+            icon: Icon(Icons.delete_outline, size: 16, color: Theme.of(context).colorScheme.error),
+            onPressed: () => _deleteBlock(block.id),
+            tooltip: 'Eliminar bloque',
+            visualDensity: VisualDensity.compact,
           ),
         ],
       ),
@@ -279,7 +380,8 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
       title: title,
       updatedAt: DateTime.now(),
     );
-    ref.read(pageProvider(widget.page.id).notifier).updatePage(updatedPage);
+    // Use page service directly since pageProvider is a FutureProvider
+    ref.read(pageServiceProvider).updatePage(updatedPage);
   }
 
   void _onBlocksReordered(int oldIndex, int newIndex) {
@@ -323,6 +425,22 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
   void _deleteBlock(String blockId) {
     ref.read(pageBlocksProvider(widget.page.id).notifier)
         .deleteBlock(blockId);
+  }
+
+  void _duplicateBlock(PageBlock block) {
+    final newBlock = PageBlock(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      pageId: widget.page.id,
+      type: block.type,
+      content: Map<String, dynamic>.from(block.content),
+      properties: Map<String, dynamic>.from(block.properties),
+      position: block.position + 1,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    ref.read(pageBlocksProvider(widget.page.id).notifier)
+        .addBlock(newBlock);
   }
 
   void _showSlashMenu(String blockId, Offset position) {

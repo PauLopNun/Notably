@@ -5,6 +5,7 @@ import '../models/page.dart';
 import '../models/template.dart';
 import '../providers/workspace_provider.dart';
 import '../providers/page_provider.dart';
+import 'hierarchical_page_tree.dart';
 
 class WorkspaceSidebar extends ConsumerStatefulWidget {
   final String? selectedWorkspaceId;
@@ -28,7 +29,6 @@ class WorkspaceSidebar extends ConsumerStatefulWidget {
 
 class _WorkspaceSidebarState extends ConsumerState<WorkspaceSidebar> {
   final Map<String, bool> _expandedWorkspaces = {};
-  final Map<String, bool> _expandedPages = {};
 
   @override
   Widget build(BuildContext context) {
@@ -235,8 +235,24 @@ class _WorkspaceSidebarState extends ConsumerState<WorkspaceSidebar> {
           return _buildEmptyPagesState(workspaceId);
         }
         
-        return Column(
-          children: pages.map((page) => _buildPageItem(page, 0)).toList(),
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: HierarchicalPageTree(
+            pages: pages,
+            selectedPageId: widget.selectedPageId,
+            onPageSelected: (page) => widget.onPageSelected?.call(page.id),
+            onPageReorder: (page) {
+              // TODO: Implement page reorder functionality
+            },
+            onCreateSubPage: (parentId, position) {
+              // TODO: Implement create subpage functionality
+              widget.onCreatePage?.call(workspaceId);
+            },
+            onDeletePage: (page) {
+              // TODO: Implement delete page functionality
+            },
+            isReadOnly: false,
+          ),
         );
       },
       loading: () => Container(
@@ -261,77 +277,6 @@ class _WorkspaceSidebarState extends ConsumerState<WorkspaceSidebar> {
     );
   }
 
-  Widget _buildPageItem(NotionPage page, int level) {
-    final isSelected = page.id == widget.selectedPageId;
-    final hasChildren = page.children.isNotEmpty;
-    final isExpanded = _expandedPages[page.id] ?? false;
-    
-    return Column(
-      children: [
-        InkWell(
-          onTap: () => widget.onPageSelected?.call(page.id),
-          child: Container(
-            padding: EdgeInsets.only(
-              left: 20.0 + (level * 16),
-              right: 12,
-              top: 6,
-              bottom: 6,
-            ),
-            decoration: isSelected ? BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(6),
-            ) : null,
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
-            child: Row(
-              children: [
-                // Expand/Collapse for children
-                if (hasChildren)
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _expandedPages[page.id] = !isExpanded;
-                      });
-                    },
-                    child: Icon(
-                      isExpanded ? Icons.expand_more : Icons.chevron_right,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  )
-                else
-                  const SizedBox(width: 16),
-                
-                const SizedBox(width: 4),
-                
-                // Page Icon
-                Text(
-                  page.icon ?? '📄',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                const SizedBox(width: 6),
-                
-                // Page Title
-                Expanded(
-                  child: Text(
-                    page.title,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        
-        // Child Pages
-        if (hasChildren && isExpanded)
-          ...page.children.map((child) => _buildPageItem(child, level + 1)),
-      ],
-    );
-  }
 
   Widget _buildEmptyPagesState(String workspaceId) {
     return Container(

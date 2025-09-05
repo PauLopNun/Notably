@@ -48,24 +48,6 @@ class NotionPage with _$NotionPage {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'workspace_id': workspaceId,
-      'parent_id': parentId,
-      'title': title,
-      'icon': icon,
-      'cover_image': coverImage,
-      'position': position,
-      'is_template': isTemplate,
-      'is_public': isPublic,
-      'created_by': createdBy,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-      'last_edited_by': lastEditedBy,
-      'properties': properties,
-    };
-  }
 }
 
 @freezed
@@ -93,16 +75,6 @@ class PagePermission with _$PagePermission {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'page_id': pageId,
-      'user_id': userId,
-      'permission_type': permissionType,
-      'granted_by': grantedBy,
-      'granted_at': grantedAt.toIso8601String(),
-    };
-  }
 }
 
 enum PagePermissionType {

@@ -37,18 +37,6 @@ class Comment with _$Comment {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'page_id': pageId,
-      'block_id': blockId,
-      'user_id': userId,
-      'content': content,
-      'parent_comment_id': parentCommentId,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
-  }
 }
 
 @freezed
@@ -82,17 +70,6 @@ class ActivityLog with _$ActivityLog {
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'workspace_id': workspaceId,
-      'page_id': pageId,
-      'user_id': userId,
-      'action': action,
-      'details': details,
-      'created_at': createdAt.toIso8601String(),
-    };
-  }
 }
 
 enum ActivityAction {

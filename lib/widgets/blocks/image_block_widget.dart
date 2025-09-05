@@ -83,7 +83,7 @@ class _ImageBlockWidgetState extends State<ImageBlockWidget> {
     return InkWell(
       onTap: _isUploading ? null : _pickImage,
       borderRadius: BorderRadius.circular(12),
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         height: 120,
         child: _isUploading
@@ -123,11 +123,11 @@ class _ImageBlockWidgetState extends State<ImageBlockWidget> {
         imageUrl: imageUrl,
         width: double.infinity,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
+        placeholder: (context, url) => SizedBox(
           height: 200,
           child: const Center(child: CircularProgressIndicator()),
         ),
-        errorWidget: (context, url, error) => Container(
+        errorWidget: (context, url, error) => SizedBox(
           height: 200,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

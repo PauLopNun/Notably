@@ -9,26 +9,17 @@ class HeadingBlockWidget extends BaseBlockWidget {
 
   const HeadingBlockWidget({
     super.key,
-    required PageBlock block,
+    required super.block,
     this.focusNode,
     this.textController,
-    bool isReadOnly = false,
-    bool isSelected = false,
-    Function(String)? onTextChanged,
-    Function(BlockType)? onTypeChanged,
-    VoidCallback? onDelete,
-    Function(Offset)? onSlashCommand,
-    Function(bool)? onFocusChanged,
-  }) : super(
-          block: block,
-          isReadOnly: isReadOnly,
-          isSelected: isSelected,
-          onTextChanged: onTextChanged,
-          onTypeChanged: onTypeChanged,
-          onDelete: onDelete,
-          onSlashCommand: onSlashCommand,
-          onFocusChanged: onFocusChanged,
-        );
+    super.isReadOnly,
+    super.isSelected,
+    super.onTextChanged,
+    super.onTypeChanged,
+    super.onDelete,
+    super.onSlashCommand,
+    super.onFocusChanged,
+  });
 
   @override
   State<HeadingBlockWidget> createState() => _HeadingBlockWidgetState();
@@ -52,9 +43,9 @@ class _HeadingBlockWidgetState extends State<HeadingBlockWidget> with TextBlockM
         ),
         borderRadius: BorderRadius.circular(8),
       ) : null,
-      child: RawKeyboardListener(
+      child: KeyboardListener(
         focusNode: FocusNode(),
-        onKey: handleKeyPress,
+        onKeyEvent: handleKeyPress,
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(

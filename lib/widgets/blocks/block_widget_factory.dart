@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/block.dart';
 import 'text_block_widget.dart';
 import 'heading_block_widget.dart';
@@ -9,6 +10,7 @@ import 'code_block_widget.dart';
 import 'divider_block_widget.dart';
 import 'callout_block_widget.dart';
 import 'image_block_widget.dart';
+import 'table_block_widget.dart';
 
 class BlockWidgetFactory {
   static Widget create({
@@ -139,11 +141,17 @@ class BlockWidgetFactory {
           onDelete: onDelete,
         );
 
+      case BlockType.table:
+        return TableBlockWidget(
+          block: block,
+          isSelected: isSelected,
+          onDelete: onDelete,
+        );
+
       // Default cases for not yet implemented blocks
       case BlockType.video:
       case BlockType.file:
       case BlockType.embed:
-      case BlockType.table:
       case BlockType.database:
         return _buildPlaceholderWidget(block, isSelected, onDelete);
     }
@@ -254,8 +262,8 @@ mixin TextBlockMixin<T extends BaseBlockWidget> on State<T> {
     widget.onFocusChanged?.call(focusNode.hasFocus);
   }
 
-  void handleKeyPress(RawKeyEvent event) {
-    if (event is RawKeyDownEvent) {
+  void handleKeyPress(KeyEvent event) {
+    if (event is KeyDownEvent) {
       // Handle slash commands
       if (event.logicalKey == LogicalKeyboardKey.slash) {
         if (textController.text.isEmpty || 

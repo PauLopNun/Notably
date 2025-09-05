@@ -75,7 +75,7 @@ class _CollaborativeTextEditorState extends ConsumerState<CollaborativeTextEdito
   }
 
   void _onDocumentChanged() {
-    if (_controller.document.isEmpty) return;
+    if (_controller.document.isEmpty()) return;
     
     final content = jsonEncode(_controller.document.toDelta().toJson());
     widget.onContentChanged(content);
@@ -130,11 +130,6 @@ class _CollaborativeTextEditorState extends ConsumerState<CollaborativeTextEdito
                 controller: _controller,
                 focusNode: _focusNode,
                 scrollController: ScrollController(),
-                autoFocus: false,
-                expands: true,
-                readOnly: false,
-                padding: const EdgeInsets.all(16.0),
-                placeholder: 'Escribe tu nota aquí...',
               ),
               
               // Overlay for cursors
@@ -148,37 +143,9 @@ class _CollaborativeTextEditorState extends ConsumerState<CollaborativeTextEdito
         ),
         
         // Toolbar
-        QuillToolbar.basic(
+        QuillSimpleToolbar(
           controller: _controller,
-          multiRowsDisplay: false,
-          showAlignmentButtons: true,
-          showBackgroundColorButton: true,
-          showBoldButton: true,
-          showClearFormat: true,
-          showCodeBlock: true,
-          showColorButton: true,
-          showDirection: true,
-          showFontFamily: false,
-          showFontSize: true,
-          showHeaderStyle: true,
-          showIndent: true,
-          showInlineCode: true,
-          showItalicButton: true,
-          showJustifyAlignment: true,
-          showLeftAlignment: true,
-          showLink: true,
-          showListBullets: true,
-          showListCheck: true,
-          showListNumbers: true,
-          showQuote: true,
-          showRedo: true,
-          showRightAlignment: true,
-          showSmallButton: false,
-          showStrikeThrough: true,
-          showSubscript: true,
-          showSuperscript: true,
-          showUnderLineButton: true,
-          showUndo: true,
+          // Use default toolbar configuration
         ),
       ],
     );

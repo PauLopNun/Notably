@@ -5,8 +5,14 @@ import '../models/page.dart';
 import '../models/template.dart';
 import '../widgets/workspace_sidebar.dart';
 import '../widgets/notion_page_editor.dart';
+import '../widgets/template_selector.dart';
+import '../widgets/breadcrumb_navigation.dart';
+import '../widgets/advanced_search.dart';
+import '../widgets/favorites_recent_panel.dart';
 import '../providers/workspace_provider.dart';
 import '../providers/page_provider.dart';
+import '../providers/template_provider.dart';
+import '../providers/favorites_provider.dart';
 import '../services/export_service.dart';
 
 class WorkspaceMainPage extends ConsumerStatefulWidget {
@@ -119,6 +125,20 @@ class _WorkspaceMainPageState extends ConsumerState<WorkspaceMainPage> {
             child: _buildBreadcrumb(),
           ),
           
+          // Favorites and Recent Button
+          IconButton(
+            onPressed: _showFavoritesAndRecent,
+            icon: const Icon(Icons.favorite),
+            tooltip: 'Favoritas y Recientes',
+          ),
+          
+          // Search Button
+          IconButton(
+            onPressed: _showAdvancedSearch,
+            icon: const Icon(Icons.search),
+            tooltip: 'Buscar',
+          ),
+          
           // Actions
           _buildTopActions(),
         ],
@@ -127,70 +147,32 @@ class _WorkspaceMainPageState extends ConsumerState<WorkspaceMainPage> {
   }
 
   Widget _buildBreadcrumb() {
-    if (_selectedWorkspaceId == null) return const SizedBox.shrink();
+    if (_selectedPageId == null || _selectedWorkspaceId == null) {
+      return const SizedBox.shrink();
+    }
 
-    final workspaceAsync = ref.watch(workspaceProvider(_selectedWorkspaceId!));
+    final pageAsync = ref.watch(pageProvider(_selectedPageId!));
+    final pagesAsync = ref.watch(workspacePagesProvider(_selectedWorkspaceId!));
     
-    return workspaceAsync.when(
-      data: (workspace) => Row(
-        children: [
-          // Workspace Icon and Name
-          Text(
-            workspace.icon,
-            style: const TextStyle(fontSize: 16),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            workspace.name,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+    return pageAsync.when(
+      data: (currentPage) => pagesAsync.when(
+        data: (allPages) {
+          final breadcrumbPages = BreadcrumbBuilder.buildBreadcrumb(currentPage, allPages);
           
-          // Page Navigation
-          if (_selectedPageId != null) ...[
-            Icon(
-              Icons.chevron_right,
-              size: 16,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            const SizedBox(width: 4),
-            _buildPageBreadcrumb(),
-          ],
-        ],
+          return BreadcrumbNavigation(
+            breadcrumbPages: breadcrumbPages,
+            currentPage: currentPage,
+            onPageTap: (page) => _onPageSelected(page.id),
+          );
+        },
+        loading: () => const SizedBox.shrink(),
+        error: (_, __) => const SizedBox.shrink(),
       ),
       loading: () => const SizedBox.shrink(),
       error: (_, __) => const SizedBox.shrink(),
     );
   }
 
-  Widget _buildPageBreadcrumb() {
-    if (_selectedPageId == null) return const SizedBox.shrink();
-
-    final pageAsync = ref.watch(pageProvider(_selectedPageId!));
-    
-    return pageAsync.when(
-      data: (page) => Row(
-        children: [
-          Text(
-            page.icon ?? '📄',
-            style: const TextStyle(fontSize: 14),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            page.title,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-      loading: () => const SizedBox(
-        width: 12,
-        height: 12,
-        child: CircularProgressIndicator(strokeWidth: 1),
-      ),
-      error: (_, __) => const SizedBox.shrink(),
-    );
-  }
 
   Widget _buildTopActions() {
     return Row(
@@ -433,6 +415,12 @@ class _WorkspaceMainPageState extends ConsumerState<WorkspaceMainPage> {
     setState(() {
       _selectedPageId = pageId;
     });
+    
+    // Add to recent pages when a page is selected
+    final pageAsync = ref.read(pageProvider(pageId));
+    pageAsync.whenData((page) {
+      ref.read(recentPagesProvider.notifier).addRecentPage(page);
+    });
   }
 
   void _onCreatePage(String workspaceId) {
@@ -462,9 +450,11 @@ class _WorkspaceMainPageState extends ConsumerState<WorkspaceMainPage> {
   }
 
   void _showCreatePageDialog(String workspaceId) {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => _CreatePageDialog(workspaceId: workspaceId),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _CreatePageBottomSheet(workspaceId: workspaceId),
     );
   }
 
@@ -487,94 +477,333 @@ class _WorkspaceMainPageState extends ConsumerState<WorkspaceMainPage> {
   void _showSettingsDialog() {
     // Implement settings dialog
   }
+
+  void _showAdvancedSearch() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => AdvancedSearch(
+        workspaceId: _selectedWorkspaceId,
+        onResultSelected: (result) {
+          // Navigate to the selected page
+          _onPageSelected(result.page.id);
+          
+          // If there's a specific block, we could scroll to it later
+          if (result.blockId != null) {
+            // TODO: Implement block navigation/highlighting
+          }
+        },
+      ),
+    );
+  }
+
+  void _showFavoritesAndRecent() {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => FavoritesRecentPanel(
+        onPageSelected: (page) => _onPageSelected(page.id),
+      ),
+    );
+  }
 }
 
-class _CreatePageDialog extends StatefulWidget {
+class _CreatePageBottomSheet extends ConsumerStatefulWidget {
   final String workspaceId;
 
-  const _CreatePageDialog({required this.workspaceId});
+  const _CreatePageBottomSheet({required this.workspaceId});
 
   @override
-  State<_CreatePageDialog> createState() => _CreatePageDialogState();
+  ConsumerState<_CreatePageBottomSheet> createState() => _CreatePageBottomSheetState();
 }
 
-class _CreatePageDialogState extends State<_CreatePageDialog> {
-  final _titleController = TextEditingController();
-  PageTemplate? _selectedTemplate;
-  String _selectedIcon = '📄';
+class _CreatePageBottomSheetState extends ConsumerState<_CreatePageBottomSheet> {
+  bool _showTemplates = false;
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Crear Nueva Página'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+    if (_showTemplates) {
+      return TemplateSelector(
+        onTemplateSelected: _onTemplateSelected,
+        onCancel: () => setState(() => _showTemplates = false),
+      );
+    }
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.6,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
         children: [
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(
-              labelText: 'Título de la página',
-              hintText: 'ej. Apuntes de Cálculo I',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16),
+          // Header
+          _buildHeader(),
           
-          // Template Selection
-          Text('Template (opcional):', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<PageTemplate>(
-            value: _selectedTemplate,
-            decoration: const InputDecoration(
-              hintText: 'Seleccionar template',
-              border: OutlineInputBorder(),
-            ),
-            items: SubjectTemplates.getAcademicTemplates()
-                .map((template) => DropdownMenuItem(
-                      value: template,
-                      child: Row(
-                        children: [
-                          Text(template.icon ?? '📄'),
-                          const SizedBox(width: 8),
-                          Text(template.name),
-                        ],
-                      ),
-                    ))
-                .toList(),
-            onChanged: (template) {
-              setState(() {
-                _selectedTemplate = template;
-                if (template?.icon != null) {
-                  _selectedIcon = template!.icon!;
-                }
-              });
-            },
+          // Options
+          Expanded(
+            child: _buildOptions(),
           ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+    );
+  }
+
+  Widget _buildHeader() {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.add_circle_outline,
+            size: 28,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Crear Nueva Página',
+                  style: theme.textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                Text(
+                  'Elige cómo quieres empezar',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+            tooltip: 'Cerrar',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptions() {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          // Create blank page
+          _buildOptionCard(
+            icon: Icons.description_outlined,
+            title: 'Página en Blanco',
+            description: 'Empieza con una página completamente vacía',
+            color: theme.colorScheme.primary,
+            onTap: () => _createBlankPage(),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Use template
+          _buildOptionCard(
+            icon: Icons.article_outlined,
+            title: 'Usar Template',
+            description: 'Crea una página basada en un template predefinido',
+            color: theme.colorScheme.secondary,
+            onTap: () => setState(() => _showTemplates = true),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Quick templates
+          _buildQuickTemplates(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionCard({
+    required IconData icon,
+    required String title,
+    required String description,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    return Card(
+      elevation: 2,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color.withAlpha(100),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: color,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
         ),
-        ElevatedButton(
-          onPressed: _titleController.text.isNotEmpty ? _createPage : null,
-          child: const Text('Crear'),
+      ),
+    );
+  }
+
+  Widget _buildQuickTemplates() {
+    final theme = Theme.of(context);
+    final featuredTemplates = ref.read(featuredTemplatesProvider);
+    
+    if (featuredTemplates.isEmpty) return const SizedBox.shrink();
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Templates Populares',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: featuredTemplates.map((template) => 
+              _buildQuickTemplateCard(template)).toList(),
+          ),
         ),
       ],
     );
   }
 
-  void _createPage() {
-    // Create page logic would go here
-    Navigator.pop(context);
+  Widget _buildQuickTemplateCard(PageTemplate template) {
+    final theme = Theme.of(context);
+    return Container(
+      width: 140,
+      margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        elevation: 1,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          onTap: () => _onTemplateSelected(template),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  template.icon ?? '📝',
+                  style: const TextStyle(fontSize: 24),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  template.name,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    super.dispose();
+  void _createBlankPage() {
+    _createPageFromTemplate(null);
+  }
+
+  void _onTemplateSelected(PageTemplate template) {
+    _createPageFromTemplate(template);
+  }
+
+  void _createPageFromTemplate(PageTemplate? template) async {
+    if (template != null) {
+      // Apply template
+      final templateNotifier = ref.read(templateApplicationProvider.notifier);
+      await templateNotifier.applyTemplate(
+        template: template,
+        workspaceId: widget.workspaceId,
+      );
+      
+      // Listen to application state
+      ref.listen(templateApplicationProvider, (previous, next) {
+        if (next is _Success) {
+          Navigator.pop(context);
+          // Navigate to the new page or refresh the workspace
+        } else if (next is _Error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${next.message}')),
+          );
+        }
+      });
+    } else {
+      // Create blank page
+      try {
+        final workspaceNotifier = ref.read(workspaceNotifierProvider(widget.workspaceId).notifier);
+        await workspaceNotifier.createPage(
+          title: 'Página sin título',
+          icon: '📄',
+        );
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al crear página: $e')),
+        );
+      }
+    }
   }
 }
 
@@ -872,7 +1101,7 @@ class _ExportDialogState extends ConsumerState<_ExportDialog> {
 
     try {
       final pageAsync = ref.read(pageProvider(widget.pageId));
-      final page = await pageAsync.value;
+      final page = pageAsync.value;
 
       final exportService = ExportService();
       

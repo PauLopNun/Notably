@@ -21,10 +21,6 @@ class NoteService {
         .eq('user_id', user.id)
         .order('created_at', ascending: false);
 
-      if (response == null) {
-        return [];
-      }
-
       return response.map<Note>((note) => Note.fromMap(note)).toList();
     } catch (e) {
       print('Error fetching notes: $e');
@@ -45,7 +41,7 @@ class NoteService {
         'user_id': note.userId,
       }).select();
 
-      if (response == null || response.isEmpty) {
+      if (response.isEmpty) {
         throw Exception('Error al crear la nota');
       }
     } catch (e) {
