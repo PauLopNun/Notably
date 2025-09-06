@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reorderables/reorderables.dart';
 import '../models/block.dart';
@@ -194,25 +193,37 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
             Material(
               color: Colors.transparent,
               child: Transform.scale(
-                scale: 1.05,
-                child: Container(
-                  constraints: constraints,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withAlpha(50),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
+                scale: 1.1,
+                child: Transform.rotate(
+                  angle: 0.02,
+                  child: Container(
+                    constraints: constraints,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 3,
                       ),
-                    ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).colorScheme.primary.withAlpha(80),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withAlpha(20),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Opacity(
+                      opacity: 0.9,
+                      child: child,
+                    ),
                   ),
-                  child: child,
                 ),
               ),
             ),
@@ -285,21 +296,25 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
                 onTap: () => _selectBlock(block.id),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: 24,
-                  height: 32,
+                  width: 28,
+                  height: 36,
                   margin: const EdgeInsets.only(top: 4, right: 8),
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(6),
                     color: isSelected 
-                      ? Theme.of(context).colorScheme.primary.withAlpha(40)
+                      ? Theme.of(context).colorScheme.primary.withAlpha(60)
                       : Colors.transparent,
                   ),
-                  child: Icon(
-                    Icons.drag_indicator,
-                    size: 16,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Theme.of(context).colorScheme.outline.withAlpha(150),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(
+                      isSelected ? Icons.open_with : Icons.drag_indicator,
+                      key: ValueKey(isSelected),
+                      size: 18,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.outline.withAlpha(120),
+                    ),
                   ),
                 ),
               ),
@@ -380,14 +395,30 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
       title: title,
       updatedAt: DateTime.now(),
     );
-    // Use page service directly since pageProvider is a FutureProvider
-    ref.read(pageServiceProvider).updatePage(updatedPage);
+    // Update page through workspace pages notifier
+    ref.read(workspacePagesNotifierProvider(widget.page.workspaceId).notifier).updatePage(updatedPage);
   }
 
   void _onBlocksReordered(int oldIndex, int newIndex) {
     // Handle block reordering logic
-    ref.read(pageBlocksProvider(widget.page.id).notifier)
-        .reorderBlocks(oldIndex, newIndex);
+    if (oldIndex != newIndex) {
+      ref.read(pageBlocksProvider(widget.page.id).notifier)
+          .reorderBlocks(oldIndex, newIndex);
+      
+      // Show feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bloque reordenado'),
+          duration: Duration(seconds: 1),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      // Clear selection after reordering
+      setState(() {
+        _selectedBlockId = null;
+      });
+    }
   }
 
   void _onBlockTextChanged(String blockId, String text) {

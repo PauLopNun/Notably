@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:reorderables/reorderables.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -111,6 +112,38 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
       child: AnimationLimiter(
         child: ReorderableColumn(
           onReorder: widget.isReadOnly ? null : (oldIndex, newIndex) => _onReorder(oldIndex, newIndex),
+          buildDraggableFeedback: (context, constraints, child) => Material(
+            color: Colors.transparent,
+            child: Transform.scale(
+              scale: 1.05,
+              child: Transform.rotate(
+                angle: 0.01,
+                child: Container(
+                  constraints: constraints,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).primaryColor.withOpacity(0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 8),
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: Opacity(
+                    opacity: 0.9,
+                    child: child,
+                  ),
+                ),
+              ),
+            ),
+          ),
           children: blocks.asMap().entries.map((entry) {
             final index = entry.key;
             final block = entry.value;
@@ -196,13 +229,29 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
               children: [
                 // Block handle (drag indicator)
                 if (!widget.isReadOnly && (isHovered || isSelected))
-                  Container(
-                    width: 24,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Icon(
-                      Icons.drag_indicator,
-                      size: 16,
-                      color: Colors.grey.withOpacity(0.6),
+                  MouseRegion(
+                    cursor: SystemMouseCursors.grab,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 28,
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color: isSelected 
+                          ? Theme.of(context).primaryColor.withOpacity(0.1)
+                          : Colors.transparent,
+                      ),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: Icon(
+                          isSelected ? Icons.open_with : Icons.drag_indicator,
+                          key: ValueKey('${block.id}_${isSelected}'),
+                          size: 18,
+                          color: isSelected
+                            ? Theme.of(context).primaryColor
+                            : Colors.grey.withOpacity(0.6),
+                        ),
+                      ),
                     ),
                   ),
                 
@@ -550,8 +599,32 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
   }
 
   void _onReorder(int oldIndex, int newIndex) {
-    // This will be handled by the ReorderableColumn widget
-    // The actual reordering logic should update the backend
+    if (oldIndex != newIndex) {
+      ref.read(pageBlocksProvider(widget.page.id).notifier)
+          .reorderBlocks(oldIndex, newIndex);
+      
+      // Show success feedback
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white, size: 20),
+              SizedBox(width: 8),
+              Text('Block reordered successfully'),
+            ],
+          ),
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green[600],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+      
+      // Provide haptic feedback
+      HapticFeedback.mediumImpact();
+    }
   }
 
   Map<String, dynamic> _getDefaultContentForType(models.BlockType type) {
