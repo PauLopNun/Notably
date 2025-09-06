@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/page.dart';
 import '../models/block.dart';
@@ -215,7 +216,7 @@ class PageBlocksNotifier extends StateNotifier<AsyncValue<List<PageBlock>>> {
 
   // Additional methods for notion_page_editor
   Future<void> reorderBlocks(int oldIndex, int newIndex) async {
-    await state.whenData((blocks) async {
+    state.whenData((blocks) async {
       if (oldIndex < 0 || oldIndex >= blocks.length || newIndex < 0 || newIndex >= blocks.length || oldIndex == newIndex) {
         return;
       }
@@ -239,48 +240,52 @@ class PageBlocksNotifier extends StateNotifier<AsyncValue<List<PageBlock>>> {
   }
 
   Future<void> updateBlockContent(String blockId, Map<String, dynamic> content) async {
-    state.whenData((blocks) async {
-      final blockIndex = blocks.indexWhere((b) => b.id == blockId);
-      if (blockIndex != -1) {
-        final updatedBlock = blocks[blockIndex].copyWith(content: content);
-        final updatedBlocks = List<PageBlock>.from(blocks);
-        updatedBlocks[blockIndex] = updatedBlock;
-        
-        // Update state optimistically
-        state = AsyncValue.data(updatedBlocks);
-        
-        try {
-          await _pageService.updateBlock(updatedBlock);
-        } catch (e) {
-          // Revert on error
-          await loadBlocks();
-          rethrow;
-        }
+    final currentBlocks = state.valueOrNull;
+    if (currentBlocks == null) return;
+    
+    final blocks = currentBlocks;
+    final blockIndex = blocks.indexWhere((b) => b.id == blockId);
+    if (blockIndex != -1) {
+      final updatedBlock = blocks[blockIndex].copyWith(content: content);
+      final updatedBlocks = List<PageBlock>.from(blocks);
+      updatedBlocks[blockIndex] = updatedBlock;
+      
+      // Update state optimistically
+      state = AsyncValue.data(updatedBlocks);
+      
+      try {
+        await _pageService.updateBlock(updatedBlock);
+      } catch (e) {
+        // Revert on error
+        await loadBlocks();
+        rethrow;
       }
-    });
+    }
   }
 
   Future<void> changeBlockType(String blockId, BlockType newType) async {
-    state.whenData((blocks) async {
-      final blockIndex = blocks.indexWhere((b) => b.id == blockId);
-      if (blockIndex != -1) {
-        final block = blocks[blockIndex];
-        final updatedBlock = block.copyWith(type: newType);
-        final updatedBlocks = List<PageBlock>.from(blocks);
-        updatedBlocks[blockIndex] = updatedBlock;
-        
-        // Update state optimistically
-        state = AsyncValue.data(updatedBlocks);
-        
-        try {
-          await _pageService.updateBlock(updatedBlock);
-        } catch (e) {
-          // Revert on error
-          await loadBlocks();
-          rethrow;
-        }
+    final currentBlocks = state.valueOrNull;
+    if (currentBlocks == null) return;
+    
+    final blocks = currentBlocks;
+    final blockIndex = blocks.indexWhere((b) => b.id == blockId);
+    if (blockIndex != -1) {
+      final block = blocks[blockIndex];
+      final updatedBlock = block.copyWith(type: newType);
+      final updatedBlocks = List<PageBlock>.from(blocks);
+      updatedBlocks[blockIndex] = updatedBlock;
+      
+      // Update state optimistically
+      state = AsyncValue.data(updatedBlocks);
+      
+      try {
+        await _pageService.updateBlock(updatedBlock);
+      } catch (e) {
+        // Revert on error
+        await loadBlocks();
+        rethrow;
       }
-    });
+    }
   }
 
   Future<void> addBlock(PageBlock block) async {
@@ -288,10 +293,11 @@ class PageBlocksNotifier extends StateNotifier<AsyncValue<List<PageBlock>>> {
       await _pageService.updateBlock(block);
       
       // Add to current state
-      state.whenData((blocks) {
-        final updatedBlocks = List<PageBlock>.from(blocks)..add(block);
+      final currentBlocks = state.valueOrNull;
+      if (currentBlocks != null) {
+        final updatedBlocks = List<PageBlock>.from(currentBlocks)..add(block);
         state = AsyncValue.data(updatedBlocks);
-      });
+      }
     } catch (e) {
       rethrow;
     }
@@ -305,7 +311,7 @@ class PageBlocksNotifier extends StateNotifier<AsyncValue<List<PageBlock>>> {
           await _pageService.updateBlock(updatedBlock);
         } catch (e) {
           // Continue with other blocks even if one fails
-          print('Failed to update block position: $e');
+          debugPrint('Failed to update block position: $e');
         }
       }
     }

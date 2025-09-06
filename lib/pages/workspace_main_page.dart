@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/workspace.dart';
-import '../models/page.dart';
 import '../models/template.dart';
 import '../widgets/workspace_sidebar.dart';
 import '../widgets/notion_page_editor.dart';
@@ -780,19 +778,22 @@ class _CreatePageBottomSheetState extends ConsumerState<_CreatePageBottomSheet> 
       
       // Listen to application state
       ref.listen(templateApplicationProvider, (previous, next) {
-        if (next is _Success) {
-          Navigator.pop(context);
-          // Navigate to the new page or refresh the workspace
-        } else if (next is _Error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${next.message}')),
-          );
+        switch (next.runtimeType.toString()) {
+          case '_Success':
+            Navigator.pop(context);
+            // Navigate to the new page or refresh the workspace
+            break;
+          case '_Error':
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Error applying template')),
+            );
+            break;
         }
       });
     } else {
       // Create blank page
       try {
-        final workspaceNotifier = ref.read(workspaceNotifierProvider(widget.workspaceId).notifier);
+        final workspaceNotifier = ref.read(workspacePagesNotifierProvider(widget.workspaceId).notifier);
         await workspaceNotifier.createPage(
           title: 'Página sin título',
           icon: '📄',
@@ -1113,7 +1114,7 @@ class _ExportDialogState extends ConsumerState<_ExportDialog> {
         includeImages: _includeImages,
       );
 
-      final result = await exportService.exportPage(page, options);
+      final result = await exportService.exportPage(page!, options);
       
       if (mounted) {
         Navigator.pop(context);
@@ -1134,7 +1135,7 @@ class _ExportDialogState extends ConsumerState<_ExportDialog> {
             backgroundColor: Colors.green,
             action: SnackBarAction(
               label: 'Compartir',
-              onPressed: () => exportService.shareFile(result.filePath ?? ''),
+              onPressed: () => exportService.shareFile(result),
             ),
           ),
         );

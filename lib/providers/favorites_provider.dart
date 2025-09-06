@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/page.dart';
 import '../services/page_service.dart';
+import '../services/workspace_service.dart';
 
 class FavoritesNotifier extends StateNotifier<AsyncValue<List<NotionPage>>> {
   FavoritesNotifier(this._pageService) : super(const AsyncValue.loading()) {
@@ -25,9 +26,7 @@ class FavoritesNotifier extends StateNotifier<AsyncValue<List<NotionPage>>> {
       for (final pageId in favoriteIds) {
         try {
           final page = await _pageService.getPage(pageId);
-          if (page != null) {
-            favoritePages.add(page);
-          }
+          favoritePages.add(page);
         } catch (e) {
           // Page might have been deleted, remove from favorites
           await _removeFavoriteId(pageId);
@@ -132,10 +131,8 @@ class RecentPagesNotifier extends StateNotifier<AsyncValue<List<NotionPage>>> {
           if (timestamp == null) continue;
           
           final page = await _pageService.getPage(pageId);
-          if (page != null) {
-            recentPages.add(page);
-            validData.add(dataString);
-          }
+          recentPages.add(page);
+          validData.add(dataString);
         } catch (e) {
           // Page might have been deleted, skip it
         }
@@ -214,7 +211,7 @@ class RecentPagesNotifier extends StateNotifier<AsyncValue<List<NotionPage>>> {
 }
 
 // Providers
-final pageServiceProvider = Provider<PageService>((ref) => PageService());
+final pageServiceProvider = Provider<PageService>((ref) => PageService(ref.read(workspaceServiceProvider)));
 
 final favoritesProvider = StateNotifierProvider<FavoritesNotifier, AsyncValue<List<NotionPage>>>(
   (ref) => FavoritesNotifier(ref.read(pageServiceProvider)),

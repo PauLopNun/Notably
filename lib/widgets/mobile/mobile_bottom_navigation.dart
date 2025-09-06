@@ -164,6 +164,7 @@ class _MobileFABState extends ConsumerState<MobileFAB>
                   onPressed: _toggle,
                   child: AnimatedRotation(
                     turns: _animation.value * 0.125, // 45 degrees
+                    duration: const Duration(milliseconds: 300),
                     child: Icon(_isOpen ? Icons.close : Icons.add),
                   ),
                 ),

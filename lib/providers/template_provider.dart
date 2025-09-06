@@ -100,7 +100,7 @@ class TemplateApplicationNotifier extends StateNotifier<TemplateApplicationState
       await _templateService.incrementTemplateUsage(template.id);
       
       state = TemplateApplicationState.success(page);
-    } catch (error, stackTrace) {
+    } catch (error) {
       state = TemplateApplicationState.error(error.toString());
     }
   }
@@ -126,7 +126,7 @@ class TemplateApplicationNotifier extends StateNotifier<TemplateApplicationState
       );
       
       state = TemplateApplicationState.templateCreated(template);
-    } catch (error, stackTrace) {
+    } catch (error) {
       state = TemplateApplicationState.error(error.toString());
     }
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/theme_provider.dart';
 import '../widgets/theme_selector.dart';
 
 class SettingsPage extends ConsumerWidget {

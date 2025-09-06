@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/theme_provider.dart';
-import '../theme_selector.dart';
 
 class MobileAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final String title;
