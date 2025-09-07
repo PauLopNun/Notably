@@ -32,9 +32,9 @@ class OfflineService {
   bool get isOffline => !_isOnline;
 
   void _initializeConnectivity() {
-    _connectivity.onConnectivityChanged.listen((ConnectivityResult result) {
+    _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
       final wasOffline = !_isOnline;
-      _isOnline = result != ConnectivityResult.none;
+      _isOnline = results.any((result) => result != ConnectivityResult.none);
       
       if (wasOffline && _isOnline) {
         // Connection restored - sync pending changes
@@ -43,8 +43,8 @@ class OfflineService {
     });
 
     // Check initial connectivity
-    _connectivity.checkConnectivity().then((result) {
-      _isOnline = result != ConnectivityResult.none;
+    _connectivity.checkConnectivity().then((results) {
+      _isOnline = results.any((result) => result != ConnectivityResult.none);
     });
   }
 
@@ -62,7 +62,7 @@ class OfflineService {
       if (notesJson != null) {
         final notesList = jsonDecode(notesJson) as List<dynamic>;
         for (final noteData in notesList) {
-          final note = Note.fromJson(noteData);
+          final note = Note.fromMap(noteData);
           _notesCache[note.id] = note;
         }
       }
@@ -106,7 +106,7 @@ class OfflineService {
     
     try {
       // Save notes
-      final notesList = _notesCache.values.map((note) => note.toJson()).toList();
+      final notesList = _notesCache.values.map((note) => note.toMap()).toList();
       await prefs.setString(_notesKey, jsonEncode(notesList));
 
       // Save pages
@@ -310,7 +310,7 @@ class OfflineService {
     final lowercaseQuery = query.toLowerCase();
     return _notesCache.values.where((note) {
       return note.title.toLowerCase().contains(lowercaseQuery) ||
-             note.content.toLowerCase().contains(lowercaseQuery);
+             note.content.toString().toLowerCase().contains(lowercaseQuery);
     }).toList();
   }
 

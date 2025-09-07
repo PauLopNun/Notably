@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import '../models/page.dart';
 import '../models/block.dart';
 import '../models/workspace.dart';
+import 'page_service.dart';
 
 // Export formats enum
 enum ExportFormat {
@@ -35,9 +36,13 @@ enum HtmlTheme {
   classic,
 }
 
-final exportServiceProvider = Provider<ExportService>((ref) => ExportService());
+final exportServiceProvider = Provider<ExportService>((ref) => 
+  ExportService(ref.read(pageServiceProvider)));
 
 class ExportService {
+  final PageService _pageService;
+  
+  ExportService(this._pageService);
 
   // Export a single page
   Future<ExportResult> exportPage(NotionPage page, ExportOptions options) async {
@@ -67,9 +72,9 @@ class ExportService {
         case ExportFormat.pdf:
           return await _exportWorkspaceToPDF(workspace, pages, options);
         case ExportFormat.markdown:
-          return await _exportWorkspaceToMarkdown(workspace, pages, options);
+          return await _exportWorkspaceToMarkdown(workspace, pages, options!);
         case ExportFormat.html:
-          return await _exportWorkspaceToHTML(workspace, pages, options);
+          return await _exportWorkspaceToHTML(workspace, pages, options!);
         default:
           throw Exception('Formato no soportado para workspace');
       }
@@ -81,7 +86,7 @@ class ExportService {
   // PDF Export Implementation
   Future<ExportResult> _exportToPDF(NotionPage page, ExportOptions? options) async {
     final pdf = pw.Document();
-    final theme = options?.pdfTheme ?? PDFTheme.academic();
+    final theme = options?.pdfTheme ?? PdfThemeData.academic();
 
     // Add page content
     pdf.addPage(
@@ -154,7 +159,7 @@ class ExportService {
 
   // HTML Export Implementation
   Future<ExportResult> _exportToHTML(NotionPage page, ExportOptions? options) async {
-    final theme = options?.htmlTheme ?? HTMLTheme.clean();
+    final theme = options?.htmlTheme ?? HtmlThemeData.clean();
     final buffer = StringBuffer();
     
     // HTML structure
@@ -247,7 +252,7 @@ class ExportService {
   // JSON Export Implementation
   Future<ExportResult> _exportToJSON(NotionPage page, ExportOptions? options) async {
     final data = {
-      'page': page.toMap(),
+      'page': page.toJson(),
       'exported_at': DateTime.now().toIso8601String(),
       'version': '1.0',
       'format': 'notably_json',
@@ -274,7 +279,7 @@ class ExportService {
   Future<ExportResult> _exportWorkspaceToPDF(Workspace workspace, List<NotionPage> pages, 
       ExportOptions? options) async {
     final pdf = pw.Document();
-    final theme = options?.pdfTheme ?? PDFTheme.academic();
+    final theme = options?.pdfTheme ?? PdfThemeData.academic();
 
     // Add cover page
     pdf.addPage(
@@ -341,7 +346,7 @@ class ExportService {
   }
 
   // Helper methods for PDF content generation
-  pw.Widget _buildPDFHeader(NotionPage page, PDFTheme theme) {
+  pw.Widget _buildPDFHeader(NotionPage page, PdfThemeData theme) {
     return pw.Container(
       alignment: pw.Alignment.centerRight,
       margin: const pw.EdgeInsets.only(bottom: 20),
@@ -362,7 +367,7 @@ class ExportService {
     );
   }
 
-  pw.Widget _buildPDFFooter(pw.Context context, PDFTheme theme) {
+  pw.Widget _buildPDFFooter(pw.Context context, PdfThemeData theme) {
     return pw.Container(
       alignment: pw.Alignment.centerRight,
       margin: const pw.EdgeInsets.only(top: 20),
@@ -382,7 +387,7 @@ class ExportService {
     );
   }
 
-  List<pw.Widget> _buildPDFContent(NotionPage page, PDFTheme theme) {
+  List<pw.Widget> _buildPDFContent(NotionPage page, PdfThemeData theme) {
     final widgets = <pw.Widget>[];
     
     // Page title
@@ -418,7 +423,7 @@ class ExportService {
     return widgets;
   }
 
-  pw.Widget _buildWorkspaceCover(Workspace workspace, List<NotionPage> pages, PDFTheme theme) {
+  pw.Widget _buildWorkspaceCover(Workspace workspace, List<NotionPage> pages, PdfThemeData theme) {
     return pw.Center(
       child: pw.Column(
         mainAxisAlignment: pw.MainAxisAlignment.center,
@@ -456,7 +461,7 @@ class ExportService {
     );
   }
 
-  List<pw.Widget> _buildTableOfContents(List<NotionPage> pages, PDFTheme theme) {
+  List<pw.Widget> _buildTableOfContents(List<NotionPage> pages, PdfThemeData theme) {
     final widgets = <pw.Widget>[
       pw.Text(
         'Índice',
@@ -496,7 +501,7 @@ class ExportService {
   }
 
   // Block conversion methods
-  pw.Widget _blockToPDFWidget(PageBlock block, PDFTheme theme) {
+  pw.Widget _blockToPDFWidget(PageBlock block, PdfThemeData theme) {
     switch (block.type) {
       case BlockType.heading1:
         return pw.Text(
@@ -714,6 +719,180 @@ class ExportService {
   String _prettyPrintJson(Map<String, dynamic> json) {
     // Simple JSON pretty printing
     return json.toString(); // In real implementation, use proper JSON encoding
+  }
+
+  Future<ExportResult> _exportWorkspaceToMarkdown(Workspace workspace, List<NotionPage> pages, ExportOptions options) async {
+    try {
+      final buffer = StringBuffer();
+      
+      // Workspace header
+      buffer.writeln('# ${workspace.name}');
+      buffer.writeln();
+      
+      if (workspace.description?.isNotEmpty ?? false) {
+        buffer.writeln('${workspace.description}');
+        buffer.writeln();
+      }
+      
+      if (options.includeMetadata) {
+        buffer.writeln('---');
+        buffer.writeln('**Workspace ID:** ${workspace.id}');
+        buffer.writeln('**Created:** ${_formatDate(workspace.createdAt)}');
+        buffer.writeln('**Last updated:** ${_formatDate(workspace.updatedAt)}');
+        buffer.writeln('**Pages:** ${pages.length}');
+        buffer.writeln('---');
+        buffer.writeln();
+      }
+      
+      // Export each page
+      for (final page in pages) {
+        buffer.writeln('## ${page.title}');
+        buffer.writeln();
+        
+        if (options.includeMetadata) {
+          buffer.writeln('*Created: ${_formatDate(page.createdAt)} | Updated: ${_formatDate(page.updatedAt)}*');
+          buffer.writeln();
+        }
+        
+        // Get page blocks and convert them
+        try {
+          final blocks = await _pageService.getPageBlocks(page.id);
+          for (final block in blocks) {
+            final markdown = _blockToMarkdown(block);
+            if (markdown.isNotEmpty) {
+              buffer.writeln(markdown);
+              buffer.writeln();
+            }
+          }
+        } catch (e) {
+          buffer.writeln('*Error loading page content: $e*');
+        }
+        
+        buffer.writeln('---');
+        buffer.writeln();
+      }
+      
+      final content = buffer.toString();
+      final fileName = '${workspace.name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')}_workspace.md';
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$fileName');
+      
+      await file.writeAsString(content);
+      
+      return ExportResult.success(
+        filePath: file.path,
+        fileName: fileName,
+        format: ExportFormat.markdown,
+        size: await file.length(),
+        content: content,
+      );
+    } catch (e) {
+      return ExportResult.error('Error exporting workspace to Markdown: ${e.toString()}');
+    }
+  }
+
+  Future<ExportResult> _exportWorkspaceToHTML(Workspace workspace, List<NotionPage> pages, ExportOptions options) async {
+    try {
+      final theme = options.htmlTheme ?? HtmlThemeData.clean();
+      final buffer = StringBuffer();
+      
+      // HTML header
+      buffer.writeln('<!DOCTYPE html>');
+      buffer.writeln('<html lang="es">');
+      buffer.writeln('<head>');
+      buffer.writeln('<meta charset="UTF-8">');
+      buffer.writeln('<meta name="viewport" content="width=device-width, initial-scale=1.0">');
+      buffer.writeln('<title>${workspace.name}</title>');
+      buffer.writeln('<style>');
+      buffer.writeln(theme.css);
+      buffer.writeln('</style>');
+      buffer.writeln('</head>');
+      buffer.writeln('<body>');
+      
+      // Workspace header
+      buffer.writeln('<header>');
+      buffer.writeln('<h1>${_escapeHtml(workspace.name)}</h1>');
+      
+      if (workspace.description?.isNotEmpty ?? false) {
+        buffer.writeln('<p class="description">${_escapeHtml(workspace.description!)}</p>');
+      }
+      
+      if (options.includeMetadata) {
+        buffer.writeln('<div class="metadata">');
+        buffer.writeln('<p><strong>Workspace ID:</strong> ${workspace.id}</p>');
+        buffer.writeln('<p><strong>Created:</strong> ${_formatDate(workspace.createdAt)}</p>');
+        buffer.writeln('<p><strong>Last updated:</strong> ${_formatDate(workspace.updatedAt)}</p>');
+        buffer.writeln('<p><strong>Pages:</strong> ${pages.length}</p>');
+        buffer.writeln('</div>');
+      }
+      
+      buffer.writeln('</header>');
+      
+      // Table of contents
+      buffer.writeln('<nav class="toc">');
+      buffer.writeln('<h2>Table of Contents</h2>');
+      buffer.writeln('<ul>');
+      for (final page in pages) {
+        final pageId = page.id.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+        buffer.writeln('<li><a href="#page_$pageId">${_escapeHtml(page.title)}</a></li>');
+      }
+      buffer.writeln('</ul>');
+      buffer.writeln('</nav>');
+      
+      // Export each page
+      buffer.writeln('<main>');
+      for (final page in pages) {
+        final pageId = page.id.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_');
+        buffer.writeln('<section id="page_$pageId" class="page">');
+        buffer.writeln('<h2>${_escapeHtml(page.title)}</h2>');
+        
+        if (options.includeMetadata) {
+          buffer.writeln('<div class="page-metadata">');
+          buffer.writeln('<p><em>Created: ${_formatDate(page.createdAt)} | Updated: ${_formatDate(page.updatedAt)}</em></p>');
+          buffer.writeln('</div>');
+        }
+        
+        // Get page blocks and convert them
+        try {
+          final blocks = await _pageService.getPageBlocks(page.id);
+          for (final block in blocks) {
+            final html = _blockToHTML(block);
+            if (html.isNotEmpty) {
+              buffer.writeln(html);
+            }
+          }
+        } catch (e) {
+          buffer.writeln('<p class="error"><em>Error loading page content: ${_escapeHtml(e.toString())}</em></p>');
+        }
+        
+        buffer.writeln('</section>');
+      }
+      buffer.writeln('</main>');
+      
+      // HTML footer
+      buffer.writeln('<footer>');
+      buffer.writeln('<p>Generated by Notably on ${_formatDate(DateTime.now())}</p>');
+      buffer.writeln('</footer>');
+      buffer.writeln('</body>');
+      buffer.writeln('</html>');
+      
+      final content = buffer.toString();
+      final fileName = '${workspace.name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')}_workspace.html';
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$fileName');
+      
+      await file.writeAsString(content);
+      
+      return ExportResult.success(
+        filePath: file.path,
+        fileName: fileName,
+        format: ExportFormat.html,
+        size: await file.length(),
+        content: content,
+      );
+    } catch (e) {
+      return ExportResult.error('Error exporting workspace to HTML: ${e.toString()}');
+    }
   }
 }
 

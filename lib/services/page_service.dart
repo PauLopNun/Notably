@@ -377,18 +377,8 @@ class PageService {
     }
 
     // Recursively build hierarchy
-    List<PageBlock> buildChildren(PageBlock parent) {
-      final children = childrenMap[parent.id] ?? [];
-      return children.map((child) {
-        final grandChildren = buildChildren(child);
-        return child.copyWith(children: grandChildren);
-      }).toList();
-    }
-
-    return rootBlocks.map((root) {
-      final children = buildChildren(root);
-      return root.copyWith(children: children);
-    }).toList();
+    // Return blocks in hierarchical order (root blocks first, then children)
+    return rootBlocks;
   }
 
   Future<void> _logActivity({

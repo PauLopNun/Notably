@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/template.dart';
 import '../models/page.dart';
 import '../services/template_service.dart';
-import '../services/workspace_service.dart';
+import '../services/page_service.dart';
 
 // Template service provider
 final templateServiceProvider = Provider<TemplateService>((ref) {
-  final workspaceService = ref.read(workspaceServiceProvider);
-  return TemplateService(workspaceService);
+  final pageService = ref.read(pageServiceProvider);
+  return TemplateService(pageService);
 });
 
 // All templates provider

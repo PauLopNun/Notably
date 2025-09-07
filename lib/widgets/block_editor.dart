@@ -111,7 +111,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
       padding: const EdgeInsets.all(16),
       child: AnimationLimiter(
         child: ReorderableColumn(
-          onReorder: widget.isReadOnly ? null : (oldIndex, newIndex) => _onReorder(oldIndex, newIndex),
+          onReorder: widget.isReadOnly ? (oldIndex, newIndex) {} : (oldIndex, newIndex) => _onReorder(oldIndex, newIndex),
           buildDraggableFeedback: (context, constraints, child) => Material(
             color: Colors.transparent,
             child: Transform.scale(
@@ -279,12 +279,10 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
       case models.BlockType.paragraph:
         return TextBlockWidget(
           block: block,
-          controller: _getController(block.id),
+          textController: _getController(block.id),
           focusNode: _getFocusNode(block.id),
-          onChanged: (text) => _updateBlockContent(block, {'text': text}),
-          onEnterPressed: () => _handleEnterPressed(block),
-          onBackspacePressed: () => _handleBackspacePressed(block),
-          readOnly: widget.isReadOnly,
+          isReadOnly: widget.isReadOnly,
+          onTextChanged: (text) => _updateBlockContent(block, {'text': text}),
         );
       
       case models.BlockType.heading1:
@@ -292,11 +290,10 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
       case models.BlockType.heading3:
         return HeadingBlockWidget(
           block: block,
-          controller: _getController(block.id),
+          textController: _getController(block.id),
           focusNode: _getFocusNode(block.id),
-          onChanged: (text) => _updateBlockContent(block, {'text': text}),
-          onEnterPressed: () => _handleEnterPressed(block),
-          readOnly: widget.isReadOnly,
+          isReadOnly: widget.isReadOnly,
+          onTextChanged: (text) => _updateBlockContent(block, {'text': text}),
         );
       
       case models.BlockType.bulletedList:
@@ -306,7 +303,6 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
           controller: _getController(block.id),
           focusNode: _getFocusNode(block.id),
           onChanged: (text) => _updateBlockContent(block, {'text': text}),
-          onEnterPressed: () => _handleEnterPressed(block),
           readOnly: widget.isReadOnly,
         );
       
@@ -317,7 +313,6 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
           focusNode: _getFocusNode(block.id),
           onChanged: (text) => _updateBlockContent(block, {'text': text}),
           onCheckedChanged: (checked) => _updateBlockContent(block, {'checked': checked}),
-          onEnterPressed: () => _handleEnterPressed(block),
           readOnly: widget.isReadOnly,
         );
       
@@ -327,18 +322,16 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
           controller: _getController(block.id),
           focusNode: _getFocusNode(block.id),
           onChanged: (text) => _updateBlockContent(block, {'text': text}),
-          onEnterPressed: () => _handleEnterPressed(block),
           readOnly: widget.isReadOnly,
         );
       
       case models.BlockType.code:
         return CodeBlockWidget(
           block: block,
-          controller: _getController(block.id),
+          textController: _getController(block.id),
           focusNode: _getFocusNode(block.id),
-          onChanged: (text) => _updateBlockContent(block, {'code': text}),
-          onLanguageChanged: (language) => _updateBlockContent(block, {'language': language}),
-          readOnly: widget.isReadOnly,
+          isReadOnly: widget.isReadOnly,
+          onTextChanged: (text) => _updateBlockContent(block, {'code': text}),
         );
       
       case models.BlockType.divider:
@@ -347,11 +340,10 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
       case models.BlockType.callout:
         return CalloutBlockWidget(
           block: block,
-          controller: _getController(block.id),
+          textController: _getController(block.id),
           focusNode: _getFocusNode(block.id),
-          onChanged: (text) => _updateBlockContent(block, {'text': text}),
-          onIconChanged: (icon) => _updateBlockContent(block, {'icon': icon}),
-          readOnly: widget.isReadOnly,
+          isReadOnly: widget.isReadOnly,
+          onTextChanged: (text) => _updateBlockContent(block, {'text': text}),
         );
       
       default:

@@ -1104,7 +1104,7 @@ class _ExportDialogState extends ConsumerState<_ExportDialog> {
       final pageAsync = ref.read(pageProvider(widget.pageId));
       final page = pageAsync.value;
 
-      final exportService = ExportService();
+      final exportService = ref.read(exportServiceProvider);
       
       final options = ExportOptions(
         format: _selectedFormat,

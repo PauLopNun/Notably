@@ -847,13 +847,15 @@ class _AdvancedSearchState extends ConsumerState<AdvancedSearch> {
     return searchText.contains(searchQuery);
   }
 
-  String _extractTextFromBlock(NotionBlock block) {
+  String _extractTextFromBlock(PageBlock block) {
     switch (block.type) {
-      case BlockType.text:
+      case BlockType.paragraph:
         return block.content['text'] ?? '';
-      case BlockType.heading:
+      case BlockType.heading1:
+      case BlockType.heading2:
+      case BlockType.heading3:
         return block.content['text'] ?? '';
-      case BlockType.bulletList:
+      case BlockType.bulletedList:
       case BlockType.numberedList:
         final items = block.content['items'] as List? ?? [];
         return items.join(' ');

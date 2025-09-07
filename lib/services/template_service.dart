@@ -1,12 +1,12 @@
 import '../models/template.dart';
 import '../models/block.dart';
 import '../models/page.dart';
-import 'workspace_service.dart';
+import 'page_service.dart';
 
 class TemplateService {
-  final WorkspaceService _workspaceService;
+  final PageService _pageService;
 
-  TemplateService(this._workspaceService);
+  TemplateService(this._pageService);
 
   /// Get all available templates
   Future<List<PageTemplate>> getAllTemplates() async {
@@ -42,7 +42,7 @@ class TemplateService {
     String? parentId,
   }) async {
     // Create the new page
-    final page = await _workspaceService.createPage(
+    final page = await _pageService.createPage(
       workspaceId: workspaceId,
       parentId: parentId,
       title: customTitle ?? template.name,
@@ -54,7 +54,7 @@ class TemplateService {
     
     // Create all blocks
     for (final block in blocks) {
-      await _workspaceService.createBlock(
+      await _pageService.createBlock(
         pageId: page.id,
         parentBlockId: block.parentBlockId,
         type: block.type,

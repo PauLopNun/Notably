@@ -15,7 +15,7 @@ import 'table_block_widget.dart';
 class BlockWidgetFactory {
   static Widget create({
     required PageBlock block,
-    required FocusNode focusNode,
+    FocusNode? focusNode,
     TextEditingController? textController,
     bool isReadOnly = false,
     bool isSelected = false,
@@ -32,12 +32,7 @@ class BlockWidgetFactory {
           focusNode: focusNode,
           textController: textController,
           isReadOnly: isReadOnly,
-          isSelected: isSelected,
           onTextChanged: onTextChanged,
-          onTypeChanged: onTypeChanged,
-          onDelete: onDelete,
-          onSlashCommand: onSlashCommand,
-          onFocusChanged: onFocusChanged,
         );
 
       case BlockType.heading1:
