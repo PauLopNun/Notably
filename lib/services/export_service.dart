@@ -329,7 +329,8 @@ class ExportService {
   // Share exported file
   Future<void> shareFile(ExportResult result) async {
     if (result.isSuccess && result.filePath != null) {
-      await Share.shareXFiles([XFile(result.filePath!)]);
+      final xFile = XFile(result.filePath!);
+      await Share.shareXFiles([xFile]);
     }
   }
 

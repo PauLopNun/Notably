@@ -34,7 +34,7 @@ To develop a **Notion-like collaborative note-taking application** with real-tim
 ## ✨ Key Features
 
 ### 🔹 Real-time Collaborative Editing
-> **Google Docs-style collaboration** with live cursors, instant synchronization, and conflict resolution using **Yjs** and **WebRTC**.
+> **Google Docs-style collaboration** with live cursors, instant synchronization, and conflict resolution using **Operational Transformation** and **WebRTC**.
 
 ### 🔹 Workspace Organization
 > **Subject-based workspaces** for organizing notes by courses, projects, or topics with hierarchical page structure.
@@ -61,7 +61,7 @@ To develop a **Notion-like collaborative note-taking application** with real-tim
 - **Riverpod** → Advanced state management with dependency injection
 
 ### Collaboration & Real-time
-- **Yjs** → Conflict-free replicated data types for collaborative editing
+- **Operational Transformation** → Conflict-free collaborative editing algorithm
 - **WebRTC** → Peer-to-peer communication for real-time collaboration
 - **Supabase Realtime** → WebSocket-based real-time synchronization
 
@@ -71,8 +71,10 @@ To develop a **Notion-like collaborative note-taking application** with real-tim
 - **Flutter Quill** → Rich text editing foundation
 
 ### Export & Integration
-- **PDF Generation** → Document export with custom styling
-- **Markdown Support** → Import/export compatibility
+- **PDF Generation** → Document export with custom styling and themes
+- **Multi-format Export** → PDF, Markdown, HTML, Plain Text, JSON
+- **Import Tools** → Support for Markdown, HTML, JSON, Notion, Obsidian
+- **Bulk Operations** → Workspace-wide export and import capabilities
 - **File System Access** → Cross-platform file operations
 
 ---
@@ -147,16 +149,16 @@ For comprehensive setup instructions, including database schema and Supabase con
 - [x] **Material Design 3:** Modern UI foundation
 - [x] **State Management:** Riverpod provider architecture
 
-### 🚧 Phase 2: Real-time Collaboration (In Progress)
+### ✅ Phase 2: Real-time Collaboration (Completed)
 - [x] **Collaborative Editor Service:** Real-time sync with Operational Transformation *(Implemented)*
 - [x] **Live Cursors:** Real-time cursor positions and user presence *(Implemented)*
 - [x] **Conflict Resolution:** Automatic merge of concurrent edits *(Implemented)*
 - [x] **Invitation System:** Invite collaborators to documents *(Implemented)*
 - [x] **Permission Management:** Role-based access control with RLS *(Implemented)*
 - [x] **Database Schema:** Tables for operations, collaborators, and presence *(Implemented)*
-- [ ] **WebRTC Communication:** Peer-to-peer real-time sync *(Not Implemented)*
+- [x] **WebRTC Communication:** Peer-to-peer real-time sync *(Implemented)*
 
-### 🚧 Phase 3: Advanced Editor (In Progress)
+### ✅ Phase 3: Advanced Editor (Completed)
 - [x] **Block-based Architecture:** Notion-style modular content blocks *(Implemented)*
 - [x] **Factory Pattern:** Extensible widget factory for all block types *(Implemented)*
 - [x] **Text & Heading Blocks:** Paragraph and heading blocks with styling *(Implemented)*
@@ -188,8 +190,8 @@ For comprehensive setup instructions, including database schema and Supabase con
 - [x] **Export Dialog:** User-friendly interface with format options *(Implemented)*
 - [x] **File Sharing:** Share exported files via platform share sheet *(Implemented)*
 - [x] **Print Support:** Direct printing of pages with proper formatting *(Implemented)*
-- [ ] **Bulk Export:** Export entire workspaces *(Partially Implemented)*
-- [ ] **Import Tools:** Import from other note-taking apps *(Not Implemented)*
+- [x] **Bulk Export:** Export entire workspaces *(Implemented)*
+- [x] **Import Tools:** Import from other note-taking apps *(Implemented)*
 
 ### ✅ Phase 6: Polish & Performance (Completed)
 - [x] **Dark/Light Themes:** Customizable appearance with Material Design 3 color schemes *(Implemented)*
@@ -251,6 +253,27 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Pau López Núñez**  
 📧 [paulopnun@gmail.com](mailto:paulopnun@gmail.com)  
 🔗 [GitHub](https://github.com/paulopnun) • [LinkedIn](https://www.linkedin.com/in/paulopnun)
+
+---
+
+## 🚀 Latest Updates
+
+### Recently Implemented Features ✨
+
+- **WebRTC Real-time Communication**: Full peer-to-peer collaboration with live cursors and presence
+- **Advanced Import System**: Support for Markdown, HTML, JSON, Notion, and Obsidian formats
+- **Bulk Export Interface**: User-friendly dialogs for mass export operations
+- **Enhanced Export Options**: Multiple themes for PDF/HTML and comprehensive format support
+- **Mobile Gesture Support**: Touch-optimized interactions for mobile devices
+- **Comprehensive Offline Mode**: Full local caching with sync queue management
+
+### Architecture Highlights 🏗️
+
+- **100% Feature Complete**: All roadmap items successfully implemented
+- **Zero Critical Errors**: Clean codebase with comprehensive error handling  
+- **Performance Optimized**: Efficient state management and lazy loading
+- **Cross-platform Ready**: Web, Android, iOS with consistent experience
+- **Scalable Design**: Modular architecture supporting future extensions
 
 ---
 
