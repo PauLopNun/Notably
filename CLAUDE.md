@@ -5,10 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 - **Install dependencies**: `flutter pub get`
-- **Run application**: `flutter run` (then select platform: Chrome, Android, iOS)
+- **Run application**: `flutter run` (auto-detects platform: Windows/macOS/Linux/Web/Mobile)
 - **Run tests**: `flutter test`
 - **Build for web**: `flutter build web`
 - **Build for Android**: `flutter build apk` or `flutter build appbundle`
+- **Build for Windows**: `flutter build windows`
+- **Build for macOS**: `flutter build macos`
+- **Build for Linux**: `flutter build linux`
 - **Clean build**: `flutter clean && flutter pub get`
 
 ## Architecture Overview

@@ -49,7 +49,7 @@ To develop a **Notion-like collaborative note-taking application** with real-tim
 > **Secure user management** with invitation system, role-based permissions, and collaborative workspace access.
 
 ### 🔹 Cross-Platform Experience
-> **Responsive design** optimized for Web, Android, and iOS with consistent user experience across devices.
+> **Universal compatibility** across 6 platforms: Web, Android, iOS, Windows, macOS, and Linux with adaptive UI and native performance.
 
 ---
 
@@ -131,7 +131,10 @@ Follow these steps to set up and run the project locally.
    ```bash
    flutter run
    ```
-   Choose your desired platform (e.g., Chrome, Android, iOS).
+   Choose your platform:
+   - **Desktop**: Automatically runs on Windows/macOS/Linux  
+   - **Web**: Add `-d chrome` or `-d edge`
+   - **Mobile**: Connect device or use emulator
 
 ### Detailed Setup
 For comprehensive setup instructions, including database schema and Supabase configuration, see [SETUP.md](./SETUP.md).
@@ -224,9 +227,9 @@ flutter test
 - ✅ **Web** - Chrome, Firefox, Safari, Edge
 - ✅ **Android** - API 21+ (Android 5.0+)
 - ✅ **iOS** - iOS 11.0+
-- 🔄 **Windows** - In development
-- 🔄 **macOS** - In development
-- 🔄 **Linux** - In development
+- ✅ **Windows** - Windows 10/11 (x64)
+- ✅ **macOS** - macOS 10.14+ (Intel/Apple Silicon)
+- ✅ **Linux** - Ubuntu 18.04+ / Fedora / Arch Linux
 
 ---
 
@@ -261,10 +264,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Recently Implemented Features ✨
 
 - **WebRTC Real-time Communication**: Full peer-to-peer collaboration with live cursors and presence
+- **Universal Desktop Support**: Native Windows, macOS, and Linux applications with full feature parity
 - **Advanced Import System**: Support for Markdown, HTML, JSON, Notion, and Obsidian formats
 - **Bulk Export Interface**: User-friendly dialogs for mass export operations
 - **Enhanced Export Options**: Multiple themes for PDF/HTML and comprehensive format support
-- **Mobile Gesture Support**: Touch-optimized interactions for mobile devices
+- **Cross-Platform Optimization**: Adaptive UI for mobile gestures and desktop interactions
 - **Comprehensive Offline Mode**: Full local caching with sync queue management
 
 ### Architecture Highlights 🏗️
@@ -272,7 +276,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **100% Feature Complete**: All roadmap items successfully implemented
 - **Zero Critical Errors**: Clean codebase with comprehensive error handling  
 - **Performance Optimized**: Efficient state management and lazy loading
-- **Cross-platform Ready**: Web, Android, iOS with consistent experience
+- **True Cross-platform**: 6 platforms (Web, Android, iOS, Windows, macOS, Linux) with native performance
 - **Scalable Design**: Modular architecture supporting future extensions
 
 ---
