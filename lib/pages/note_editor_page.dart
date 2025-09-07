@@ -176,7 +176,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     return Consumer(
       builder: (context, ref, _) {
         return PopScope(
-          onPopInvoked: (didPop) async {
+          onPopInvokedWithResult: (didPop, result) async {
             if (!didPop) {
               final shouldPop = await _onWillPop();
               if (shouldPop && context.mounted) {
@@ -200,7 +200,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
@@ -233,7 +233,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.08),
+                      color: Colors.black.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.3 : 0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

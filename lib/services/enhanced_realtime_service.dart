@@ -10,8 +10,6 @@ class EnhancedRealtimeService {
 
   // Page collaboration
   RealtimeChannel? _pageChannel;
-  String? _currentPageId;
-  String? _currentWorkspaceId;
   
   // Streams for different types of updates
   final _pageUpdatesController = StreamController<NotionPage>.broadcast();
@@ -33,8 +31,6 @@ class EnhancedRealtimeService {
 
   Future<void> joinPage({required String pageId, required String workspaceId}) async {
     await leave();
-    _currentPageId = pageId;
-    _currentWorkspaceId = workspaceId;
     
     // Create channel for this page
     _pageChannel = _client.channel('page:$pageId');
@@ -138,8 +134,6 @@ class EnhancedRealtimeService {
       await _pageChannel?.unsubscribe();
     } catch (_) {}
     _pageChannel = null;
-    _currentPageId = null;
-    _currentWorkspaceId = null;
     _activeUsers.clear();
   }
 

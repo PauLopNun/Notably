@@ -15,7 +15,10 @@
       "Bash(git add:*)",
       "Bash(./gradlew --stop)",
       "Bash(flutter:*)",
-      "Bash(sdkmanager:*)"
+      "Bash(sdkmanager:*)",
+      "Bash(for:*)",
+      "Bash(done)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

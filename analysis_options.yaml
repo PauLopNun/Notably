@@ -23,9 +23,7 @@ linter:
     unnecessary_brace_in_string_interps: false
     sort_child_properties_last: false
     unnecessary_underscores: false
-    deprecated_member_use: false
     use_build_context_synchronously: false
-    unused_field: false
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

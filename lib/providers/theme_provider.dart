@@ -86,11 +86,9 @@ class AppColorSchemes {
     errorContainer: Color(0xFFFEE2E2),
     onErrorContainer: Color(0xFF410002),
     outline: Color(0xFF79747E),
-    background: Color(0xFFFFFBFE),
-    onBackground: Color(0xFF1C1B1F),
     surface: Color(0xFFFFFBFE),
     onSurface: Color(0xFF1C1B1F),
-    surfaceVariant: Color(0xFFE7E0EC),
+    surfaceContainerHighest: Color(0xFFE7E0EC),
     onSurfaceVariant: Color(0xFF49454F),
     inverseSurface: Color(0xFF313033),
     onInverseSurface: Color(0xFFF4EFF4),
@@ -119,11 +117,9 @@ class AppColorSchemes {
     errorContainer: Color(0xFF93000A),
     onErrorContainer: Color(0xFFFFDAD6),
     outline: Color(0xFF938F99),
-    background: Color(0xFF0F172A),
-    onBackground: Color(0xFFE4E1E6),
     surface: Color(0xFF0F172A),
     onSurface: Color(0xFFE4E1E6),
-    surfaceVariant: Color(0xFF1E293B),
+    surfaceContainerHighest: Color(0xFF1E293B),
     onSurfaceVariant: Color(0xFFCAC4D0),
     inverseSurface: Color(0xFFE4E1E6),
     onInverseSurface: Color(0xFF313033),
@@ -185,7 +181,7 @@ class AppThemes {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColorSchemes.lightColorScheme.outline.withOpacity(0.3)),
+        borderSide: BorderSide(color: AppColorSchemes.lightColorScheme.outline.withValues(alpha: 0.3)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -218,7 +214,7 @@ class AppThemes {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColorSchemes.lightSurfaceContainer,
       indicatorColor: AppColorSchemes.lightColorScheme.primaryContainer,
-      labelTextStyle: MaterialStateProperty.all(
+      labelTextStyle: WidgetStateProperty.all(
         const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
       ),
     ),
@@ -288,7 +284,7 @@ class AppThemes {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColorSchemes.darkColorScheme.outline.withOpacity(0.3)),
+        borderSide: BorderSide(color: AppColorSchemes.darkColorScheme.outline.withValues(alpha: 0.3)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -321,7 +317,7 @@ class AppThemes {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: AppColorSchemes.darkSurfaceContainer,
       indicatorColor: AppColorSchemes.darkColorScheme.primaryContainer,
-      labelTextStyle: MaterialStateProperty.all(
+      labelTextStyle: WidgetStateProperty.all(
         const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
       ),
     ),

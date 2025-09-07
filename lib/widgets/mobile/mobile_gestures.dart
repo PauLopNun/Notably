@@ -28,7 +28,6 @@ class _SwipeActionCardState extends State<SwipeActionCard>
   late Animation<double> _animation;
   double _dragExtent = 0.0;
   double _maxExtent = 0.0;
-  bool _isOpen = false;
 
   @override
   void initState() {
@@ -78,7 +77,7 @@ class _SwipeActionCardState extends State<SwipeActionCard>
   }
 
   Widget _buildActionsBackground() {
-    return Container(
+    return SizedBox(
       height: double.infinity,
       child: Row(
         children: [
@@ -186,7 +185,6 @@ class _SwipeActionCardState extends State<SwipeActionCard>
 
   void _open() {
     setState(() {
-      _isOpen = true;
       if (_dragExtent > 0 && widget.leftActions != null) {
         _dragExtent = _maxExtent * 0.5;
       } else if (_dragExtent < 0 && widget.rightActions != null) {
@@ -198,7 +196,6 @@ class _SwipeActionCardState extends State<SwipeActionCard>
 
   void _close() {
     setState(() {
-      _isOpen = false;
       _dragExtent = 0.0;
     });
     _controller.forward();

@@ -45,7 +45,7 @@ class DragDropIndicator extends StatelessWidget {
       );
     } else if (isDragging) {
       return Border.all(
-        color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
         width: 1,
       );
     }
@@ -56,7 +56,7 @@ class DragDropIndicator extends StatelessWidget {
     if (isDropTarget) {
       return [
         BoxShadow(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           blurRadius: 12,
           offset: const Offset(0, 4),
         ),
@@ -64,7 +64,7 @@ class DragDropIndicator extends StatelessWidget {
     } else if (isDragging) {
       return [
         BoxShadow(
-          color: Colors.black.withOpacity(0.2),
+          color: Colors.black.withValues(alpha: 0.2),
           blurRadius: 8,
           offset: const Offset(0, 2),
         ),
@@ -75,9 +75,9 @@ class DragDropIndicator extends StatelessWidget {
 
   Matrix4? _getTransform() {
     if (isDropTarget) {
-      return Matrix4.identity()..scale(1.02);
+      return Matrix4.identity()..scaleByDouble(1.02, 1.02, 1.0, 1.0);
     } else if (isDragging) {
-      return Matrix4.identity()..scale(0.98);
+      return Matrix4.identity()..scaleByDouble(0.98, 0.98, 1.0, 1.0);
     }
     return null;
   }
@@ -143,7 +143,7 @@ class _DropZoneIndicatorState extends State<DropZoneIndicator>
             boxShadow: widget.isActive
                 ? [
                     BoxShadow(
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.5),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),
@@ -247,11 +247,11 @@ class _DragHandleState extends State<DragHandle>
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6),
                       color: widget.isSelected || _isHovered
-                          ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                           : Colors.transparent,
                       border: widget.isSelected || _isHovered
                           ? Border.all(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                               width: 1,
                             )
                           : null,
@@ -264,7 +264,7 @@ class _DragHandleState extends State<DragHandle>
                         size: 18,
                         color: widget.isSelected || _isHovered
                             ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.outline.withOpacity(0.6),
+                            : Theme.of(context).colorScheme.outline.withValues(alpha: 0.6),
                       ),
                     ),
                   ),

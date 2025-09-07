@@ -172,7 +172,6 @@ class CollaborativeEditorService {
       final user = _supabase.auth.currentUser;
       if (user == null) return;
       
-      final cursorColor = _getCursorColor(user.id);
       // Broadcast cursor position via database insert
       // Note: For simplicity, we're using database operations instead of WebRTC
       await _supabase

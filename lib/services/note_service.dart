@@ -2,6 +2,7 @@ import '../models/note.dart';
 import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
 final noteServiceProvider = Provider<NoteService>((ref) => NoteService());
 
@@ -23,7 +24,7 @@ class NoteService {
 
       return response.map<Note>((note) => Note.fromMap(note)).toList();
     } catch (e) {
-      print('Error fetching notes: $e');
+      debugPrint('Error fetching notes: $e');
       rethrow;
     }
   }
@@ -45,7 +46,7 @@ class NoteService {
         throw Exception('Error al crear la nota');
       }
     } catch (e) {
-      print('Error creating note: $e');
+      debugPrint('Error creating note: $e');
       rethrow;
     }
   }
@@ -67,7 +68,7 @@ class NoteService {
         throw Exception('Error al actualizar la nota');
       }
     } catch (e) {
-      print('Error updating note: $e');
+      debugPrint('Error updating note: $e');
       rethrow;
     }
   }
@@ -89,7 +90,7 @@ class NoteService {
         throw Exception('Error al eliminar la nota');
       }
     } catch (e) {
-      print('Error deleting note: $e');
+      debugPrint('Error deleting note: $e');
       rethrow;
     }
   }

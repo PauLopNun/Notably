@@ -129,7 +129,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).primaryColor.withOpacity(0.3),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                         blurRadius: 16,
                         offset: const Offset(0, 8),
                         spreadRadius: 2,
@@ -218,10 +218,10 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
               border: isSelected
                   ? Border.all(color: Theme.of(context).primaryColor, width: 2)
                   : isHovered
-                      ? Border.all(color: Colors.grey.withOpacity(0.3))
+                      ? Border.all(color: Colors.grey.withValues(alpha: 0.3))
                       : null,
               color: isSelected
-                  ? Theme.of(context).primaryColor.withOpacity(0.05)
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
                   : null,
             ),
             child: Row(
@@ -238,7 +238,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(4),
                         color: isSelected 
-                          ? Theme.of(context).primaryColor.withOpacity(0.1)
+                          ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                           : Colors.transparent,
                       ),
                       child: AnimatedSwitcher(
@@ -249,7 +249,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
                           size: 18,
                           color: isSelected
                             ? Theme.of(context).primaryColor
-                            : Colors.grey.withOpacity(0.6),
+                            : Colors.grey.withValues(alpha: 0.6),
                         ),
                       ),
                     ),
@@ -350,7 +350,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
@@ -457,7 +457,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -573,22 +573,6 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
     }
   }
 
-  void _handleEnterPressed(models.PageBlock block) {
-    if (widget.isReadOnly) return;
-    
-    // Add a new paragraph block after the current one
-    _addBlock(models.BlockType.paragraph, block.position + 1);
-  }
-
-  void _handleBackspacePressed(models.PageBlock block) {
-    if (widget.isReadOnly) return;
-    
-    final text = block.content['text'] as String? ?? '';
-    if (text.isEmpty && block.type == models.BlockType.paragraph) {
-      // Delete empty paragraph blocks
-      _deleteBlock(block);
-    }
-  }
 
   void _onReorder(int oldIndex, int newIndex) {
     if (oldIndex != newIndex) {

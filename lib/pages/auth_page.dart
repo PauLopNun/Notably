@@ -168,7 +168,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withOpacity(0.3),
+                color: AppTheme.primaryColor.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -215,14 +215,14 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor.withOpacity(0.8),
+        color: AppTheme.surfaceColor.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppTheme.borderColor.withOpacity(0.3),
+          color: AppTheme.borderColor.withValues(alpha: 0.3),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

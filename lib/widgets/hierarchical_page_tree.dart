@@ -404,7 +404,7 @@ class _CreateSubPageDialogState extends State<_CreateSubPageDialog> {
           // Icon selection
           const Text('Icono:', style: TextStyle(fontWeight: FontWeight.w500)),
           const SizedBox(height: 8),
-          Container(
+          SizedBox(
             height: 60,
             child: GridView.builder(
               scrollDirection: Axis.horizontal,
@@ -505,16 +505,19 @@ class _MovePageDialogState extends State<_MovePageDialog> {
           const SizedBox(height: 12),
           
           // Root option
-          RadioListTile<String?>(
+          ListTile(
             title: const Text('📁 Nivel raíz'),
-            value: null,
-            groupValue: _selectedParentId,
-            onChanged: (value) => setState(() => _selectedParentId = value),
+            leading: Radio<String?>(
+              value: null,
+              groupValue: _selectedParentId,
+              onChanged: (value) => setState(() => _selectedParentId = value),
+            ),
+            onTap: () => setState(() => _selectedParentId = null),
           ),
           
           // Parent options
           ...availableParents.map((page) {
-            return RadioListTile<String>(
+            return ListTile(
               title: Row(
                 children: [
                   Text(page.icon ?? '📄', style: const TextStyle(fontSize: 16)),
@@ -527,9 +530,12 @@ class _MovePageDialogState extends State<_MovePageDialog> {
                   ),
                 ],
               ),
-              value: page.id,
-              groupValue: _selectedParentId,
-              onChanged: (value) => setState(() => _selectedParentId = value),
+              leading: Radio<String>(
+                value: page.id,
+                groupValue: _selectedParentId,
+                onChanged: (value) => setState(() => _selectedParentId = value),
+              ),
+              onTap: () => setState(() => _selectedParentId = page.id),
             );
           }),
         ],

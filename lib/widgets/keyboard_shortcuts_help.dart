@@ -260,7 +260,7 @@ class KeyboardShortcutsHelp extends ConsumerWidget {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

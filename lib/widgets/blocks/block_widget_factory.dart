@@ -58,9 +58,9 @@ class BlockWidgetFactory {
         }
         return ListBlockWidget(
           block: block,
-          controller: textController!,
-          focusNode: focusNode!,
-          onChanged: onTextChanged!,
+          controller: textController,
+          focusNode: focusNode,
+          onChanged: onTextChanged,
           readOnly: isReadOnly,
         );
 
@@ -70,9 +70,9 @@ class BlockWidgetFactory {
         }
         return TodoBlockWidget(
           block: block,
-          controller: textController!,
-          focusNode: focusNode!,
-          onChanged: onTextChanged!,
+          controller: textController,
+          focusNode: focusNode,
+          onChanged: onTextChanged,
           onCheckedChanged: (checked) => {}, // TODO: implement properly
           readOnly: isReadOnly,
         );
@@ -83,9 +83,9 @@ class BlockWidgetFactory {
         }
         return QuoteBlockWidget(
           block: block,
-          controller: textController!,
-          focusNode: focusNode!,
-          onChanged: onTextChanged!,
+          controller: textController,
+          focusNode: focusNode,
+          onChanged: onTextChanged,
           readOnly: isReadOnly,
         );
 

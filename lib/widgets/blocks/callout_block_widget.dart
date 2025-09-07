@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/block.dart';
 import 'block_widget_factory.dart';
 
 class CalloutBlockWidget extends BaseBlockWidget {

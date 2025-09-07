@@ -2,6 +2,7 @@ import '../models/template.dart';
 import '../models/block.dart';
 import '../models/page.dart';
 import 'page_service.dart';
+import 'package:flutter/foundation.dart';
 
 class TemplateService {
   final PageService _pageService;
@@ -157,7 +158,6 @@ class TemplateService {
 
   /// Generate placeholder text for content
   String? _getPlaceholderText(Map<String, dynamic> content) {
-    final text = content['text']?.toString() ?? '';
     if (_isPlaceholderContent(content)) {
       return 'Edita este contenido';
     }
@@ -193,6 +193,6 @@ class TemplateService {
   Future<void> incrementTemplateUsage(String templateId) async {
     // In a real app, this would update the database
     // For now, just log the usage
-    print('Template $templateId was used');
+    debugPrint('Template $templateId was used');
   }
 }

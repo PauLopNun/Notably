@@ -58,7 +58,7 @@ class ListBlockWidget extends StatelessWidget {
             decoration: InputDecoration(
               hintText: _getHintText(),
               hintStyle: TextStyle(
-                color: Colors.grey.withOpacity(0.6),
+                color: Colors.grey.withValues(alpha: 0.6),
                 fontSize: 16,
               ),
               border: InputBorder.none,

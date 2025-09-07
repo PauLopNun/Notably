@@ -936,7 +936,7 @@ class _ExportDialogState extends ConsumerState<_ExportDialog> {
             Text('Formato:', style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 8),
             DropdownButtonFormField<ExportFormat>(
-              value: _selectedFormat,
+              initialValue: _selectedFormat,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 isDense: true,
@@ -968,7 +968,7 @@ class _ExportDialogState extends ConsumerState<_ExportDialog> {
               Text('Tema PDF:', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               DropdownButtonFormField<PdfTheme>(
-                value: _selectedPdfTheme,
+                initialValue: _selectedPdfTheme,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   isDense: true,
@@ -990,7 +990,7 @@ class _ExportDialogState extends ConsumerState<_ExportDialog> {
               Text('Tema HTML:', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               DropdownButtonFormField<HtmlTheme>(
-                value: _selectedHtmlTheme,
+                initialValue: _selectedHtmlTheme,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   isDense: true,

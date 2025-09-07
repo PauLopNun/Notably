@@ -64,7 +64,7 @@ class TodoBlockWidget extends StatelessWidget {
             decoration: InputDecoration(
               hintText: 'To-do item',
               hintStyle: TextStyle(
-                color: Colors.grey.withOpacity(0.6),
+                color: Colors.grey.withValues(alpha: 0.6),
                 fontSize: 16,
               ),
               border: InputBorder.none,

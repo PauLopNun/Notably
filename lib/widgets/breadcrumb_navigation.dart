@@ -178,7 +178,7 @@ class BreadcrumbBuilder {
     return allPages
         .where((page) => page.parentId == parentId)
         .toList()
-      ..sort((a, b) => (a.position ?? 0).compareTo(b.position ?? 0));
+      ..sort((a, b) => a.position.compareTo(b.position));
   }
 
   /// Get the depth level of a page in the hierarchy
@@ -228,7 +228,7 @@ class BreadcrumbBuilder {
     return allPages
         .where((page) => page.parentId == null)
         .toList()
-      ..sort((a, b) => (a.position ?? 0).compareTo(b.position ?? 0));
+      ..sort((a, b) => a.position.compareTo(b.position));
   }
 
   /// Build a hierarchical tree structure from flat page list
@@ -257,11 +257,11 @@ class BreadcrumbBuilder {
     // Sort nodes by position
     for (final node in pageMap.values) {
       node.children.sort((a, b) => 
-        (a.page.position ?? 0).compareTo(b.page.position ?? 0));
+        a.page.position.compareTo(b.page.position));
     }
     
     rootNodes.sort((a, b) => 
-      (a.page.position ?? 0).compareTo(b.page.position ?? 0));
+      a.page.position.compareTo(b.page.position));
 
     return rootNodes;
   }

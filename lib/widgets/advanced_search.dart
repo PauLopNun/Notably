@@ -76,8 +76,6 @@ class _AdvancedSearchState extends ConsumerState<AdvancedSearch> {
   bool _useRegex = false;
   DateTime? _dateFrom;
   DateTime? _dateTo;
-  List<String> _selectedTags = [];
-  List<String> _selectedAuthors = [];
 
   @override
   void initState() {

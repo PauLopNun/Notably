@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../models/block.dart';
 import 'block_widget_factory.dart';
 
 class TableBlockWidget extends BaseBlockWidget {
@@ -41,7 +40,6 @@ class _TableBlockWidgetState extends State<TableBlockWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final rows = List<List<String>>.from(_tableData['rows']);
     final hasHeader = _tableData['headerRow'] as bool;
 
     return Container(
@@ -64,7 +62,8 @@ class _TableBlockWidgetState extends State<TableBlockWidget> {
             scrollDirection: Axis.horizontal,
             child: DataTable(
               headingRowHeight: hasHeader ? 56 : 0,
-              dataRowHeight: 48,
+              dataRowMinHeight: 48,
+              dataRowMaxHeight: 48,
               columnSpacing: 16,
               headingTextStyle: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.bold,
