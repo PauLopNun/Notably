@@ -213,10 +213,11 @@ class BreadcrumbBuilder {
         return true;
       }
       
-      current = allPages.firstWhere(
-        (p) => p.id == current!.parentId,
-        orElse: () => null,
-      );
+      try {
+        current = allPages.firstWhere((p) => p.id == current!.parentId);
+      } catch (e) {
+        current = null;
+      }
     }
     
     return false;

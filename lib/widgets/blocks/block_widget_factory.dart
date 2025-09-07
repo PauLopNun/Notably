@@ -53,45 +53,40 @@ class BlockWidgetFactory {
 
       case BlockType.bulletedList:
       case BlockType.numberedList:
+        if (textController == null || focusNode == null || onTextChanged == null) {
+          return const SizedBox();
+        }
         return ListBlockWidget(
           block: block,
-          focusNode: focusNode,
-          textController: textController,
-          isReadOnly: isReadOnly,
-          isSelected: isSelected,
-          onTextChanged: onTextChanged,
-          onTypeChanged: onTypeChanged,
-          onDelete: onDelete,
-          onSlashCommand: onSlashCommand,
-          onFocusChanged: onFocusChanged,
+          controller: textController!,
+          focusNode: focusNode!,
+          onChanged: onTextChanged!,
+          readOnly: isReadOnly,
         );
 
       case BlockType.todo:
+        if (textController == null || focusNode == null || onTextChanged == null) {
+          return const SizedBox();
+        }
         return TodoBlockWidget(
           block: block,
-          focusNode: focusNode,
-          textController: textController,
-          isReadOnly: isReadOnly,
-          isSelected: isSelected,
-          onTextChanged: onTextChanged,
-          onTypeChanged: onTypeChanged,
-          onDelete: onDelete,
-          onSlashCommand: onSlashCommand,
-          onFocusChanged: onFocusChanged,
+          controller: textController!,
+          focusNode: focusNode!,
+          onChanged: onTextChanged!,
+          onCheckedChanged: (checked) => {}, // TODO: implement properly
+          readOnly: isReadOnly,
         );
 
       case BlockType.quote:
+        if (textController == null || focusNode == null || onTextChanged == null) {
+          return const SizedBox();
+        }
         return QuoteBlockWidget(
           block: block,
-          focusNode: focusNode,
-          textController: textController,
-          isReadOnly: isReadOnly,
-          isSelected: isSelected,
-          onTextChanged: onTextChanged,
-          onTypeChanged: onTypeChanged,
-          onDelete: onDelete,
-          onSlashCommand: onSlashCommand,
-          onFocusChanged: onFocusChanged,
+          controller: textController!,
+          focusNode: focusNode!,
+          onChanged: onTextChanged!,
+          readOnly: isReadOnly,
         );
 
       case BlockType.code:
@@ -109,11 +104,7 @@ class BlockWidgetFactory {
         );
 
       case BlockType.divider:
-        return DividerBlockWidget(
-          block: block,
-          isSelected: isSelected,
-          onDelete: onDelete,
-        );
+        return const DividerBlockWidget();
 
       case BlockType.callout:
         return CalloutBlockWidget(
