@@ -12,7 +12,10 @@
       "Bash(flutter build:*)",
       "Bash(dart run build_runner build:*)",
       "Bash(dart analyze:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(./gradlew --stop)",
+      "Bash(flutter:*)",
+      "Bash(sdkmanager:*)"
     ],
     "deny": [],
     "ask": []
