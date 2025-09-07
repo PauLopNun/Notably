@@ -18,7 +18,8 @@
       "Bash(sdkmanager:*)",
       "Bash(for:*)",
       "Bash(done)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(set JAVA_OPTS=-Dfile.encoding=UTF-8)"
     ],
     "deny": [],
     "ask": []
