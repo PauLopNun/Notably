@@ -3,7 +3,7 @@ import '../models/note.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/note_provider.dart';
-import '../widgets/collaborative_text_editor.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'dart:convert';
 
 class NoteEditorPage extends StatefulWidget {
@@ -16,6 +16,7 @@ class NoteEditorPage extends StatefulWidget {
 
 class _NoteEditorPageState extends State<NoteEditorPage> {
   final _titleController = TextEditingController();
+  late QuillController _controller;
   bool _isSaving = false;
   bool _hasChanges = false;
   String _currentContent = '';
@@ -23,6 +24,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
   @override
   void initState() {
     super.initState();
+    _controller = QuillController.basic();
     _titleController.text = widget.note?.title ?? '';
     _currentContent = widget.note?.content.isNotEmpty == true 
         ? jsonEncode(widget.note!.content)
@@ -257,11 +259,13 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
                     ),
                     Divider(height: 1, thickness: 1, color: Theme.of(context).dividerColor),
                     
-                    // Collaborative Text Editor
+                    // Rich Text Editor
                     Expanded(
-                      child: CollaborativeTextEditor(
-                        note: widget.note,
-                        onContentChanged: _onContentChanged,
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        child: QuillEditor.basic(
+                          controller: _controller,
+                        ),
                       ),
                     ),
                   ],

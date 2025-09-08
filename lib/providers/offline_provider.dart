@@ -26,3 +26,6 @@ final offlineInitializationProvider = FutureProvider<void>((ref) async {
   final offlineService = ref.read(offlineServiceProvider);
   await offlineService.initialize();
 });
+
+// Simple offline status provider
+final offlineProvider = StateProvider<bool>((ref) => false);
