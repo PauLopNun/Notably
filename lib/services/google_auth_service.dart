@@ -5,12 +5,19 @@ import 'package:flutter/foundation.dart';
 class GoogleAuthService {
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
+    // Client ID would be configured here for production
+    // For now, we'll handle the web error gracefully
   );
   
   final _client = Supabase.instance.client;
 
   Future<AuthResponse?> signInWithGoogle() async {
     try {
+      // Check if we're on web and show appropriate message
+      if (kIsWeb) {
+        throw Exception('Google Sign-In requiere configuración adicional en la versión web. Por favor usa email/contraseña por ahora.');
+      }
+      
       // Start the Google sign-in process
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       

@@ -48,7 +48,17 @@ class NotesNotifier extends StateNotifier<List<Note>> {
       throw Exception('User not authenticated');
     }
 
-    final existingNote = state.firstWhere((note) => note.id == id);
+    final existingNote = state.firstWhere(
+      (note) => note.id == id,
+      orElse: () => Note(
+        id: id,
+        title: title,
+        content: content,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        userId: user.id,
+      ),
+    );
     final updatedNote = Note(
       id: id,
       title: title,

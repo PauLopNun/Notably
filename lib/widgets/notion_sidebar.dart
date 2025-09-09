@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 import '../models/note.dart';
 import '../widgets/workspace_selector.dart';
 import '../widgets/template_gallery.dart';
+import '../services/pdf_export_service.dart';
 
 class NotionSidebar extends StatefulWidget {
   final List<Note> notes;
@@ -703,23 +706,175 @@ class _NotionSidebarState extends State<NotionSidebar> {
     );
   }
 
-  void _exportAsPDF(Note note) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Exporting "${note.title}" as PDF...'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
+  Future<void> _exportAsPDF(Note note) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Exporting "${note.title.isEmpty ? 'Untitled' : note.title}" as PDF...'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+      
+      final pdfService = PDFExportService();
+      final filePath = await pdfService.exportNoteToPDF(note);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF exported successfully!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          action: SnackBarAction(
+            label: 'Show Path',
+            textColor: Colors.white,
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Saved to: $filePath'),
+                  duration: const Duration(seconds: 5),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error exporting PDF: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
-  void _exportAsMarkdown(Note note) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Exporting "${note.title}" as Markdown...'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
+  Future<void> _exportAsMarkdown(Note note) async {
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Exporting "${note.title.isEmpty ? 'Untitled' : note.title}" as Markdown...'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+      
+      final content = _convertToMarkdown(note);
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}_${DateTime.now().millisecondsSinceEpoch}.md';
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsString(content);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Markdown exported successfully!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          action: SnackBarAction(
+            label: 'Show Path',
+            textColor: Colors.white,
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Saved to: ${file.path}'),
+                  duration: const Duration(seconds: 5),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error exporting Markdown: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
+  }
+
+  String _convertToMarkdown(Note note) {
+    final buffer = StringBuffer();
+    
+    // Add title
+    buffer.writeln('# ${note.title.isEmpty ? 'Untitled' : note.title}');
+    buffer.writeln();
+    
+    // Add metadata
+    buffer.writeln('---');
+    buffer.writeln('**Created:** ${_formatDate(note.createdAt)}');
+    buffer.writeln('**Last Modified:** ${_formatDate(note.updatedAt)}');
+    buffer.writeln('---');
+    buffer.writeln();
+    
+    // Convert content to markdown
+    if (note.content.isEmpty) {
+      buffer.writeln('*No content*');
+    } else {
+      try {
+        for (final op in note.content) {
+          if (op is Map && op.containsKey('insert')) {
+            String text = op['insert'].toString();
+            
+            // Apply formatting based on attributes
+            if (op.containsKey('attributes') && op['attributes'] is Map) {
+              final attrs = op['attributes'] as Map;
+              
+              if (attrs.containsKey('bold') && attrs['bold'] == true) {
+                text = '**$text**';
+              }
+              if (attrs.containsKey('italic') && attrs['italic'] == true) {
+                text = '*$text*';
+              }
+              if (attrs.containsKey('underline') && attrs['underline'] == true) {
+                text = '<u>$text</u>';
+              }
+              if (attrs.containsKey('header')) {
+                final level = attrs['header'] as int;
+                text = '${'#' * level} $text';
+              }
+              if (attrs.containsKey('list')) {
+                final listType = attrs['list'];
+                if (listType == 'bullet') {
+                  text = '- $text';
+                } else if (listType == 'ordered') {
+                  text = '1. $text';
+                }
+              }
+              if (attrs.containsKey('blockquote')) {
+                text = '> $text';
+              }
+              if (attrs.containsKey('code-block')) {
+                text = '```\n$text\n```';
+              }
+            }
+            
+            buffer.write(text);
+          }
+        }
+      } catch (e) {
+        buffer.writeln(note.content.toString());
+      }
+    }
+    
+    return buffer.toString();
+  }
+
+  String _formatDate(DateTime dateTime) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _sanitizeFileName(String fileName) {
+    return fileName.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
   }
 }
