@@ -61,7 +61,6 @@ class NoteService {
       final response = await _client.from('notes').update({
         'title': note.title,
         'content': jsonEncode(note.content),
-        'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', note.id).eq('user_id', user.id);
 
       if (response == null) {

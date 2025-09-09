@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:notably/pages/auth_page.dart';
-import 'package:notably/pages/home_page.dart';
+import 'package:notably/pages/notion_style_home.dart';
 import 'package:notably/pages/settings_page.dart';
 import 'package:notably/pages/note_editor_page.dart';
-import 'package:notably/theme/app_theme.dart';
+import 'package:notably/theme/notion_theme.dart';
 import 'models/note.dart';
 import 'providers/theme_provider.dart';
 
@@ -31,13 +31,13 @@ class NotablyApp extends ConsumerWidget {
     
     return MaterialApp(
       title: 'Notably',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: NotionTheme.lightTheme,
+      darkTheme: NotionTheme.darkTheme,
       themeMode: themeMode,
       initialRoute: '/auth',
       routes: {
         '/auth': (context) => const AuthPage(),
-        '/home': (context) => const HomePage(),
+        '/home': (context) => const NotionStyleHome(),
         '/settings': (context) => const SettingsPage(),
       },
       onGenerateRoute: (settings) {

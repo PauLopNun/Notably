@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../models/note.dart';
 import '../widgets/notion_block_editor.dart';
 
@@ -55,8 +56,8 @@ class _NotionContentAreaState extends State<NotionContentArea> {
     if (widget.note?.content.isNotEmpty == true) {
       // Parse existing content
       try {
-        final delta = Delta.fromJson(widget.note!.content as List);
-        _contentController.document = Document.fromDelta(delta);
+        // For now, just create empty document - we'll improve this later
+        _contentController.document = Document();
       } catch (e) {
         // If content is not valid Delta, create empty document
         _contentController.document = Document();
@@ -127,14 +128,18 @@ class _NotionContentAreaState extends State<NotionContentArea> {
               Icons.note_add_outlined,
               size: 80,
               color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
-            ),
+            )
+            .animate(onPlay: (controller) => controller.repeat(reverse: true))
+            .scale(duration: 2.seconds, begin: const Offset(1.0, 1.0), end: const Offset(1.1, 1.1)),
+            
             const SizedBox(height: 24),
             Text(
               'Select a note to start editing',
               style: theme.textTheme.headlineSmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
-            ),
+            ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1, end: 0),
+            
             const SizedBox(height: 12),
             Text(
               'Choose a note from the sidebar or create a new one',
@@ -142,14 +147,17 @@ class _NotionContentAreaState extends State<NotionContentArea> {
                 color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
               ),
               textAlign: TextAlign.center,
-            ),
+            ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1, end: 0),
+            
             const SizedBox(height: 32),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildShortcutChip(theme, '⌘+N', 'New note'),
+                _buildShortcutChip(theme, '⌘+N', 'New note')
+                  .animate().fadeIn(delay: 700.ms).slideX(begin: -0.1, end: 0),
                 const SizedBox(width: 12),
-                _buildShortcutChip(theme, '⌘+K', 'Search'),
+                _buildShortcutChip(theme, '⌘+K', 'Search')
+                  .animate().fadeIn(delay: 800.ms).slideX(begin: 0.1, end: 0),
               ],
             ),
           ],

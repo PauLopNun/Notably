@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:shimmer/shimmer.dart';
 import '../models/note.dart';
 
 class NotionSidebar extends StatefulWidget {
@@ -28,6 +30,7 @@ class NotionSidebar extends StatefulWidget {
 
 class _NotionSidebarState extends State<NotionSidebar> {
   String searchQuery = '';
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -252,6 +255,10 @@ class _NotionSidebarState extends State<NotionSidebar> {
   }
 
   Widget _buildNotesList(ThemeData theme, List<Note> filteredNotes) {
+    if (isLoading) {
+      return _buildShimmerLoading(theme);
+    }
+    
     if (filteredNotes.isEmpty) {
       return Center(
         child: Column(
@@ -277,7 +284,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
               ),
             ],
           ],
-        ),
+        ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.8, 0.8)),
       );
     }
 
@@ -297,7 +304,10 @@ class _NotionSidebarState extends State<NotionSidebar> {
         final note = filteredNotes[index];
         final isSelected = widget.selectedNote?.id == note.id;
         
-        return _buildNoteItem(theme, note, isSelected, index);
+        return _buildNoteItem(theme, note, isSelected, index)
+            .animate(delay: (index * 50).ms)
+            .slideX(begin: -0.1, duration: 300.ms, curve: Curves.easeOut)
+            .fadeIn(duration: 300.ms);
       },
     );
   }
@@ -318,13 +328,19 @@ class _NotionSidebarState extends State<NotionSidebar> {
               : Colors.transparent,
         ),
       ),
-      child: InkWell(
-        onTap: () => widget.onNoteSelected(note),
-        borderRadius: BorderRadius.circular(6),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        child: InkWell(
+          onTap: () => widget.onNoteSelected(note),
+          onHover: (hovering) {
+            // Add subtle hover animation
+          },
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
               // Drag handle
               ReorderableDragStartListener(
                 index: index,
@@ -427,6 +443,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
           ),
         ),
       ),
+    ),
     );
   }
 
@@ -452,6 +469,69 @@ class _NotionSidebarState extends State<NotionSidebar> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildShimmerLoading(ThemeData theme) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      itemCount: 6, // Show 6 shimmer items
+      itemBuilder: (context, index) {
+        return Shimmer.fromColors(
+          baseColor: theme.colorScheme.surfaceContainerHighest,
+          highlightColor: theme.colorScheme.surfaceContainerHigh,
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: double.infinity,
+                          height: 14,
+                          color: theme.colorScheme.surface,
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          width: 80,
+                          height: 12,
+                          color: theme.colorScheme.surface,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ).animate(delay: (index * 100).ms).fadeIn(duration: 300.ms);
+      },
     );
   }
 

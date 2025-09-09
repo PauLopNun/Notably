@@ -7,7 +7,6 @@ import '../widgets/notion_sidebar.dart';
 import '../widgets/notion_content_area.dart';
 import '../widgets/notion_properties_panel.dart';
 import '../widgets/notion_search_overlay.dart';
-import '../widgets/notion_slash_command.dart';
 import '../services/pdf_export_service.dart';
 import '../services/collaboration_service.dart';
 
@@ -61,18 +60,9 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
 
   Future<void> _createNewNote() async {
     try {
-      final newNote = Note(
-        id: '',
-        title: 'Untitled',
-        content: {},
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-        userId: Supabase.instance.client.auth.currentUser?.id ?? '',
-      );
-      
       final createdNote = await ref.read(notesProvider.notifier).createNote(
-        newNote.title,
-        newNote.content,
+        'Untitled',
+        [],
       );
       
       setState(() {

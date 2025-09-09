@@ -7,6 +7,7 @@ class Note {
   final String title;
   final List<dynamic> content;
   final DateTime createdAt;
+  final DateTime updatedAt;
 
   Note({
     required this.id,
@@ -14,6 +15,7 @@ class Note {
     required this.title,
     required this.content,
     required this.createdAt,
+    required this.updatedAt,
   });
 
   factory Note.fromMap(Map<String, dynamic> map) {
@@ -25,6 +27,7 @@ class Note {
           ? (map['content'].isNotEmpty ? jsonDecode(map['content']) : [])
           : (map['content'] ?? []),
       createdAt: DateTime.parse(map['created_at']),
+      updatedAt: DateTime.parse(map['updated_at'] ?? map['created_at']),
     );
   }
 
@@ -35,6 +38,7 @@ class Note {
       'title': title,
       'content': jsonEncode(content),
       'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 }

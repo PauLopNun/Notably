@@ -100,6 +100,7 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
           title: title,
           content: content,
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
         
         await ref.read(notesProvider.notifier).addNote(newNote);
@@ -117,9 +118,10 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
           title: title,
           content: content,
           createdAt: widget.note!.createdAt,
+          updatedAt: DateTime.now(),
         );
         
-        await ref.read(notesProvider.notifier).updateNote(updatedNote);
+        await ref.read(notesProvider.notifier).updateNoteObject(updatedNote);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Nota actualizada exitosamente'),
