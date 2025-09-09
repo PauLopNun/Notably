@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../theme/app_theme.dart';
+import '../theme/notion_theme.dart';
+import '../services/google_auth_service.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
   const AuthPage({super.key});
@@ -15,9 +16,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _googleAuthService = GoogleAuthService();
   
   bool _isLogin = true;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -85,11 +88,36 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     }
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
+    try {
+      final response = await _googleAuthService.signInWithGoogle();
+      
+      if (response != null && response.user != null) {
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
+      }
+    } catch (e) {
+      _showErrorSnackBar('Error con Google: ${e.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
   void _showErrorSnackBar(String message) {
+    final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppTheme.errorColor,
+        backgroundColor: theme.colorScheme.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -99,10 +127,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   void _showSuccessSnackBar(String message) {
+    final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppTheme.successColor,
+        backgroundColor: const Color(0xFF0F7B0F), // Notion Green
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -113,10 +142,12 @@ class _AuthPageState extends ConsumerState<AuthPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
         ),
         child: SafeArea(
           child: Center(
@@ -157,6 +188,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _buildHeader() {
+    final theme = Theme.of(context);
+    
     return Column(
       children: [
         // Logo animado
@@ -164,20 +197,20 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient,
+            color: theme.colorScheme.primary,
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                color: theme.colorScheme.primary.withOpacity(0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: const Icon(
+          child: Icon(
             Icons.note_alt_rounded,
             size: 40,
-            color: AppTheme.textPrimary,
+            color: theme.colorScheme.onPrimary,
           ),
         ),
         
@@ -186,11 +219,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         // Título principal
         Text(
           'Notably',
-          style: Theme.of(context).textTheme.displayMedium?.copyWith(
-            background: Paint()
-              ..shader = AppTheme.primaryGradient.createShader(
-                const Rect.fromLTWH(0, 0, 200, 70),
-              ),
+          style: theme.textTheme.displayMedium?.copyWith(
+            color: theme.colorScheme.primary,
+            fontWeight: FontWeight.bold,
           ),
         ),
         
@@ -201,8 +232,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           _isLogin 
             ? 'Bienvenido de vuelta a tu espacio de notas'
             : 'Crea tu cuenta y comienza a organizar tus ideas',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppTheme.textSecondary,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
@@ -211,18 +242,20 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   Widget _buildAuthForm() {
+    final theme = Theme.of(context);
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.surfaceColor.withValues(alpha: 0.8),
+        color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppTheme.borderColor.withValues(alpha: 0.3),
+          color: theme.colorScheme.outline.withOpacity(0.3),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -335,7 +368,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         Text(
           _isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppTheme.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         TextButton(
@@ -347,8 +380,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           },
           child: Text(
             _isLogin ? 'Regístrate' : 'Inicia sesión',
-            style: const TextStyle(
-              color: AppTheme.primaryColor,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -364,12 +397,12 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : _handleAuth,
         child: _isLoading
-          ? const SizedBox(
+          ? SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.textPrimary),
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             )
           : Text(
@@ -385,17 +418,17 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       children: [
         Row(
           children: [
-            Expanded(child: Divider(color: AppTheme.dividerColor)),
+            Expanded(child: Divider(color: Theme.of(context).colorScheme.outline)),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'O continúa con',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.textTertiary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
-            Expanded(child: Divider(color: AppTheme.dividerColor)),
+            Expanded(child: Divider(color: Theme.of(context).colorScheme.outline)),
           ],
         ),
         
@@ -407,10 +440,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
             _buildSocialButton(
               icon: Icons.g_mobiledata,
               label: 'Google',
-              onPressed: () {
-                // Implementar login con Google
-                _showErrorSnackBar('Login con Google próximamente');
-              },
+              onPressed: _isGoogleLoading ? null : _handleGoogleSignIn,
+              isLoading: _isGoogleLoading,
             ),
             _buildSocialButton(
               icon: Icons.apple,
@@ -429,14 +460,21 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   Widget _buildSocialButton({
     required IconData icon,
     required String label,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
+    bool isLoading = false,
   }) {
     return OutlinedButton.icon(
       onPressed: onPressed,
-      icon: Icon(icon, size: 20),
+      icon: isLoading 
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(icon, size: 20),
       label: Text(label),
       style: OutlinedButton.styleFrom(
-        side: BorderSide(color: AppTheme.borderColor),
+        side: BorderSide(color: Theme.of(context).colorScheme.outline),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     );

@@ -178,12 +178,12 @@ class _NotionPropertiesPanelState extends State<NotionPropertiesPanel> {
         _buildPropertyRow(
           theme,
           'Priority',
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
             children: [
               _buildPriorityChip(theme, 'Low', Colors.green, isSelected: false),
-              const SizedBox(width: 8),
               _buildPriorityChip(theme, 'Medium', Colors.orange, isSelected: true),
-              const SizedBox(width: 8),
               _buildPriorityChip(theme, 'High', Colors.red, isSelected: false),
             ],
           ),
@@ -195,26 +195,29 @@ class _NotionPropertiesPanelState extends State<NotionPropertiesPanel> {
         _buildPropertyRow(
           theme,
           'Status',
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                Text('Active', style: theme.textTheme.bodySmall),
-              ],
+                  const SizedBox(width: 6),
+                  Text('Active', style: theme.textTheme.bodySmall),
+                ],
+              ),
             ),
           ),
         ),

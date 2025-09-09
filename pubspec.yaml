@@ -55,6 +55,9 @@ dependencies:
   file_picker: ^10.3.2
   share_plus: ^11.1.0
   
+  # Authentication Dependencies
+  google_sign_in: ^6.2.1
+  
   # Performance & State
   collection: ^1.18.0
   rxdart: ^0.28.0

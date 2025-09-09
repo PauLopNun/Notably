@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'dart:async';
 import '../models/note.dart';
 import '../widgets/notion_block_editor.dart';
 
@@ -50,50 +51,67 @@ class _NotionContentAreaState extends State<NotionContentArea> {
     _titleController = TextEditingController(
       text: widget.note?.title ?? '',
     );
-    _contentController = QuillController.basic();
     
-    // Load content if available
+    // Initialize content controller with existing content or empty document
+    Document document = Document();
     if (widget.note?.content.isNotEmpty == true) {
-      // Parse existing content
       try {
-        // For now, just create empty document - we'll improve this later
-        _contentController.document = Document();
+        // Try to parse existing content as Quill delta
+        if (widget.note!.content is List) {
+          document = Document.fromJson(widget.note!.content);
+        } else {
+          // If content is a string or other type, create a simple text document
+          document = Document()..insert(0, widget.note!.content.toString());
+        }
       } catch (e) {
-        // If content is not valid Delta, create empty document
-        _contentController.document = Document();
+        // If parsing fails, create document with plain text content
+        document = Document()..insert(0, widget.note?.title ?? 'Start writing...');
       }
     }
+    
+    _contentController = QuillController(
+      document: document,
+      selection: const TextSelection.collapsed(offset: 0),
+    );
 
     _titleController.addListener(_onTitleChanged);
     _contentController.addListener(_onContentChanged);
   }
 
+  Timer? _debounceTimer;
+
   void _onTitleChanged() {
-    if (widget.note != null && widget.onNoteUpdated != null) {
-      final updatedNote = Note(
-        id: widget.note!.id,
-        title: _titleController.text,
-        content: _contentController.document.toDelta().toJson(),
-        createdAt: widget.note!.createdAt,
-        updatedAt: DateTime.now(),
-        userId: widget.note!.userId,
-      );
-      widget.onNoteUpdated!(updatedNote);
-    }
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      if (widget.note != null && widget.onNoteUpdated != null) {
+        final updatedNote = Note(
+          id: widget.note!.id,
+          title: _titleController.text.isEmpty ? 'Untitled' : _titleController.text,
+          content: _contentController.document.toDelta().toJson(),
+          createdAt: widget.note!.createdAt,
+          updatedAt: DateTime.now(),
+          userId: widget.note!.userId,
+        );
+        widget.onNoteUpdated!(updatedNote);
+      }
+    });
   }
 
   void _onContentChanged() {
-    if (widget.note != null && widget.onNoteUpdated != null) {
-      final updatedNote = Note(
-        id: widget.note!.id,
-        title: _titleController.text,
-        content: _contentController.document.toDelta().toJson(),
-        createdAt: widget.note!.createdAt,
-        updatedAt: DateTime.now(),
-        userId: widget.note!.userId,
-      );
-      widget.onNoteUpdated!(updatedNote);
-    }
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 1000), () {
+      if (widget.note != null && widget.onNoteUpdated != null) {
+        final updatedNote = Note(
+          id: widget.note!.id,
+          title: _titleController.text.isEmpty ? 'Untitled' : _titleController.text,
+          content: _contentController.document.toDelta().toJson(),
+          createdAt: widget.note!.createdAt,
+          updatedAt: DateTime.now(),
+          userId: widget.note!.userId,
+        );
+        widget.onNoteUpdated!(updatedNote);
+      }
+    });
   }
 
   @override
@@ -293,12 +311,14 @@ class _NotionContentAreaState extends State<NotionContentArea> {
           size: 14,
           color: theme.colorScheme.onSurfaceVariant,
         ),
-        Text(
-          widget.note!.title.isEmpty ? 'Untitled' : widget.note!.title,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.primary,
+        Expanded(
+          child: Text(
+            widget.note!.title.isEmpty ? 'Untitled' : widget.note!.title,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.primary,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
-          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

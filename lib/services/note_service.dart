@@ -61,14 +61,13 @@ class NoteService {
       final response = await _client.from('notes').update({
         'title': note.title,
         'content': jsonEncode(note.content),
-      }).eq('id', note.id).eq('user_id', user.id);
+      }).eq('id', note.id).eq('user_id', user.id).select();
 
-      if (response == null) {
-        throw Exception('Error al actualizar la nota');
-      }
+      debugPrint('Update response: $response');
+
     } catch (e) {
       debugPrint('Error updating note: $e');
-      rethrow;
+      throw Exception('Error al actualizar la nota: ${e.toString()}');
     }
   }
 
@@ -83,14 +82,14 @@ class NoteService {
         .from('notes')
         .delete()
         .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select();
 
-      if (response == null) {
-        throw Exception('Error al eliminar la nota');
-      }
+      debugPrint('Delete response: $response');
+
     } catch (e) {
       debugPrint('Error deleting note: $e');
-      rethrow;
+      throw Exception('Error al eliminar la nota: ${e.toString()}');
     }
   }
 }

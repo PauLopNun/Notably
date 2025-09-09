@@ -1,12 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import '../providers/note_provider.dart';
 import '../models/note.dart';
 import '../widgets/notion_sidebar.dart';
 import '../widgets/notion_content_area.dart';
 import '../widgets/notion_properties_panel.dart';
 import '../widgets/notion_search_overlay.dart';
+import '../widgets/collaboration_panel.dart';
+import '../widgets/advanced_search_dialog.dart';
 import '../services/pdf_export_service.dart';
 import '../services/collaboration_service.dart';
 
@@ -20,6 +24,7 @@ class NotionStyleHome extends ConsumerStatefulWidget {
 class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
   Note? selectedNote;
   bool showPropertiesPanel = false;
+  bool showCollaborationPanel = false;
   bool showSearchOverlay = false;
   double sidebarWidth = 260.0;
   bool sidebarCollapsed = false;
@@ -75,6 +80,37 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
     }
   }
 
+  Future<void> _createNoteFromTemplate(dynamic template) async {
+    try {
+      // Convert template blocks to simple text content for now
+      // In a full implementation, you'd convert to proper Quill delta format
+      List<String> contentParts = [];
+      for (var block in template.blocks) {
+        String content = block['content'] ?? '';
+        // Replace placeholder with actual date
+        if (content.contains('[Today\'s Date]')) {
+          content = content.replaceAll('[Today\'s Date]', DateTime.now().toString().split(' ')[0]);
+        }
+        contentParts.add(content);
+      }
+      
+      final templateContent = contentParts.join('\n\n');
+      
+      final createdNote = await ref.read(notesProvider.notifier).createNote(
+        template.name,
+        [{'insert': templateContent + '\n'}], // Simple Quill delta format
+      );
+      
+      setState(() {
+        selectedNote = createdNote;
+      });
+      
+      _showSnackBar('Note created from ${template.name} template');
+    } catch (e) {
+      _showSnackBar('Error creating note from template: $e', isError: true);
+    }
+  }
+
   Future<void> _deleteNote(Note note) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -121,16 +157,60 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
   Future<void> _exportToMarkdown(Note note) async {
     try {
       final content = _convertToMarkdown(note);
-      // Implementation for saving markdown file
-      _showSnackBar('Markdown export completed');
+      
+      // Save the markdown file
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.md';
+      final file = File('${directory.path}/$fileName');
+      
+      await file.writeAsString(content);
+      
+      _showSnackBar('Markdown exported to: ${file.path}');
     } catch (e) {
       _showSnackBar('Error exporting Markdown: $e', isError: true);
     }
   }
 
   String _convertToMarkdown(Note note) {
+    final buffer = StringBuffer();
+    
+    // Add title
+    buffer.writeln('# ${note.title.isEmpty ? 'Untitled' : note.title}');
+    buffer.writeln();
+    
+    // Add metadata
+    buffer.writeln('---');
+    buffer.writeln('**Created:** ${_formatDate(note.createdAt)}');
+    buffer.writeln('**Last Modified:** ${_formatDate(note.updatedAt)}');
+    buffer.writeln('---');
+    buffer.writeln();
+    
     // Convert Quill delta to Markdown
-    return '# ${note.title}\n\n${note.content.toString()}';
+    try {
+      if (note.content.isNotEmpty) {
+        for (final op in note.content) {
+          if (op is Map && op.containsKey('insert')) {
+            final text = op['insert'].toString();
+            // Simple text conversion - in a real app you'd want more sophisticated parsing
+            buffer.write(text);
+          }
+        }
+      } else {
+        buffer.writeln('*No content*');
+      }
+    } catch (e) {
+      buffer.writeln('*Error converting content*');
+    }
+    
+    return buffer.toString();
+  }
+  
+  String _sanitizeFileName(String fileName) {
+    return fileName.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').trim();
+  }
+  
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   Future<void> _shareForCollaboration(Note note) async {
@@ -211,6 +291,7 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
                       onNoteSelected: (note) => setState(() => selectedNote = note),
                       onNoteDeleted: _deleteNote,
                       onNewNote: _createNewNote,
+                      onTemplateSelected: _createNoteFromTemplate,
                       onSearch: () => setState(() => showSearchOverlay = true),
                       onToggleSidebar: () => setState(() => sidebarCollapsed = !sidebarCollapsed),
                     ),
@@ -274,31 +355,36 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
                     },
                     onExportToPDF: () => selectedNote != null ? _exportToPDF(selectedNote!) : null,
                     onExportToMarkdown: () => selectedNote != null ? _exportToMarkdown(selectedNote!) : null,
-                    onShare: () => selectedNote != null ? _shareForCollaboration(selectedNote!) : null,
+                    onShare: () => setState(() => showCollaborationPanel = !showCollaborationPanel),
                     onToggleProperties: () => setState(() => showPropertiesPanel = !showPropertiesPanel),
                   ),
                 ),
 
-                // Properties panel
-                if (showPropertiesPanel && selectedNote != null) ...[
+                // Properties or Collaboration panel
+                if ((showPropertiesPanel || showCollaborationPanel) && selectedNote != null) ...[
                   Container(
                     width: 1,
                     color: theme.dividerColor,
                   ),
                   SizedBox(
-                    width: 300,
-                    child: NotionPropertiesPanel(
-                      note: selectedNote!,
-                      onClose: () => setState(() => showPropertiesPanel = false),
-                    ),
+                    width: showCollaborationPanel ? 380 : 300,
+                    child: showCollaborationPanel
+                        ? CollaborationPanel(
+                            note: selectedNote!,
+                            onClose: () => setState(() => showCollaborationPanel = false),
+                          )
+                        : NotionPropertiesPanel(
+                            note: selectedNote!,
+                            onClose: () => setState(() => showPropertiesPanel = false),
+                          ),
                   ),
                 ],
               ],
             ),
 
-            // Search overlay
+            // Advanced Search overlay
             if (showSearchOverlay)
-              NotionSearchOverlay(
+              AdvancedSearchDialog(
                 notes: notes,
                 onNoteSelected: (note) {
                   setState(() {
@@ -306,7 +392,6 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
                     showSearchOverlay = false;
                   });
                 },
-                onClose: () => setState(() => showSearchOverlay = false),
               ),
           ],
         ),

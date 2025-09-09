@@ -13,7 +13,7 @@ class CollaborationService {
 
       // First, check if the user exists
       final existingUser = await _client
-          .from('profiles')
+          .from('auth.users')
           .select('id')
           .eq('email', email)
           .maybeSingle();
@@ -25,13 +25,14 @@ class CollaborationService {
       }
 
       // Add collaborator to the note
-      await _client.from('note_collaborators').insert({
-        'note_id': noteId,
+      await _client.from('document_collaborators').insert({
+        'document_id': noteId,
         'user_id': existingUser['id'],
+        'email': email,
         'invited_by': user.id,
-        'permission': 'edit', // Default permission
+        'role': 'editor', // Default role
         'status': 'pending',
-        'created_at': DateTime.now().toIso8601String(),
+        'invited_at': DateTime.now().toIso8601String(),
       });
 
       // Send notification to the collaborator
@@ -56,9 +57,9 @@ class CollaborationService {
       }
 
       await _client
-          .from('note_collaborators')
-          .update({'status': 'accepted'})
-          .eq('note_id', noteId)
+          .from('document_collaborators')
+          .update({'status': 'accepted', 'joined_at': DateTime.now().toIso8601String()})
+          .eq('document_id', noteId)
           .eq('user_id', user.id);
 
       debugPrint('Collaboration invite accepted');
@@ -87,9 +88,9 @@ class CollaborationService {
       }
 
       await _client
-          .from('note_collaborators')
+          .from('document_collaborators')
           .delete()
-          .eq('note_id', noteId)
+          .eq('document_id', noteId)
           .eq('user_id', userId);
 
       debugPrint('Collaborator removed successfully');
@@ -102,17 +103,15 @@ class CollaborationService {
   Future<List<Map<String, dynamic>>> getCollaborators(String noteId) async {
     try {
       final collaborators = await _client
-          .from('note_collaborators')
+          .from('document_collaborators')
           .select('''
             *,
-            profiles:user_id (
+            users:user_id (
               id,
-              email,
-              full_name,
-              avatar_url
+              email
             )
           ''')
-          .eq('note_id', noteId)
+          .eq('document_id', noteId)
           .eq('status', 'accepted');
 
       return collaborators;
@@ -128,22 +127,21 @@ class CollaborationService {
       if (user == null) return [];
 
       final invitations = await _client
-          .from('note_collaborators')
+          .from('document_collaborators')
           .select('''
             *,
-            notes:note_id (
+            notes:document_id (
               id,
               title,
               created_at
             ),
             inviter:invited_by (
-              email,
-              full_name
+              email
             )
           ''')
           .eq('user_id', user.id)
           .eq('status', 'pending')
-          .order('created_at', ascending: false);
+          .order('invited_at', ascending: false);
 
       return invitations;
     } catch (e) {
@@ -170,16 +168,16 @@ class CollaborationService {
 
       // Check if user is a collaborator with edit permissions
       final collaboration = await _client
-          .from('note_collaborators')
-          .select('permission')
-          .eq('note_id', noteId)
+          .from('document_collaborators')
+          .select('role')
+          .eq('document_id', noteId)
           .eq('user_id', user.id)
           .eq('status', 'accepted')
           .maybeSingle();
 
       return collaboration != null && 
-             (collaboration['permission'] == 'edit' || 
-              collaboration['permission'] == 'admin');
+             (collaboration['role'] == 'editor' || 
+              collaboration['role'] == 'admin');
     } catch (e) {
       debugPrint('Error checking edit permissions: $e');
       return false;
@@ -197,15 +195,15 @@ class CollaborationService {
         throw Exception('User not authenticated');
       }
 
-      // Validate permission
-      if (!['view', 'edit', 'admin'].contains(permission)) {
+      // Validate role
+      if (!['viewer', 'editor', 'admin'].contains(permission)) {
         throw Exception('Invalid permission level');
       }
 
       await _client
-          .from('note_collaborators')
-          .update({'permission': permission})
-          .eq('note_id', noteId)
+          .from('document_collaborators')
+          .update({'role': permission})
+          .eq('document_id', noteId)
           .eq('user_id', userId);
 
       debugPrint('Collaborator permission updated successfully');

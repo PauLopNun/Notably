@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
 import '../models/note.dart';
+import '../widgets/workspace_selector.dart';
+import '../widgets/template_gallery.dart';
 
 class NotionSidebar extends StatefulWidget {
   final List<Note> notes;
@@ -10,6 +12,7 @@ class NotionSidebar extends StatefulWidget {
   final Function(Note) onNoteSelected;
   final Function(Note) onNoteDeleted;
   final VoidCallback onNewNote;
+  final Function(NotionTemplate)? onTemplateSelected;
   final VoidCallback onSearch;
   final VoidCallback onToggleSidebar;
 
@@ -20,6 +23,7 @@ class NotionSidebar extends StatefulWidget {
     required this.onNoteSelected,
     required this.onNoteDeleted,
     required this.onNewNote,
+    this.onTemplateSelected,
     required this.onSearch,
     required this.onToggleSidebar,
   });
@@ -28,15 +32,39 @@ class NotionSidebar extends StatefulWidget {
   State<NotionSidebar> createState() => _NotionSidebarState();
 }
 
+enum NoteFilter { all, recent, favorites }
+
 class _NotionSidebarState extends State<NotionSidebar> {
   String searchQuery = '';
   bool isLoading = false;
+  NoteFilter _currentFilter = NoteFilter.all;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final filteredNotes = widget.notes.where((note) =>
+    List<Note> filteredNotes = widget.notes.where((note) =>
         note.title.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+    
+    // Apply filter based on current selection
+    switch (_currentFilter) {
+      case NoteFilter.all:
+        // No additional filtering
+        break;
+      case NoteFilter.recent:
+        // Show notes from last 7 days, sorted by update time
+        final now = DateTime.now();
+        final sevenDaysAgo = now.subtract(const Duration(days: 7));
+        filteredNotes = filteredNotes.where((note) => 
+          note.updatedAt.isAfter(sevenDaysAgo)
+        ).toList();
+        filteredNotes.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        break;
+      case NoteFilter.favorites:
+        // For now, just show empty list since we don't have favorites yet
+        // In a full implementation, you'd filter by favorite status
+        filteredNotes = [];
+        break;
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -47,8 +75,15 @@ class _NotionSidebarState extends State<NotionSidebar> {
       ),
       child: Column(
         children: [
-          // Header
-          _buildHeader(theme),
+          // Workspace Selector
+          const WorkspaceSelector(),
+          
+          // Divider
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            height: 1,
+            color: theme.dividerColor.withOpacity(0.3),
+          ),
           
           // Search
           _buildSearchBar(theme),
@@ -171,24 +206,34 @@ class _NotionSidebarState extends State<NotionSidebar> {
           const SizedBox(height: 4),
           _buildActionButton(
             theme,
+            icon: Icons.dashboard_customize,
+            label: 'Templates',
+            onTap: _showTemplateGallery,
+          ),
+          const SizedBox(height: 4),
+          _buildActionButton(
+            theme,
             icon: Icons.folder_open,
             label: 'All Notes',
-            onTap: () {},
+            onTap: () => setState(() => _currentFilter = NoteFilter.all),
             badge: '${widget.notes.length}',
+            isSelected: _currentFilter == NoteFilter.all,
           ),
           const SizedBox(height: 4),
           _buildActionButton(
             theme,
             icon: Icons.schedule,
             label: 'Recent',
-            onTap: () {},
+            onTap: () => setState(() => _currentFilter = NoteFilter.recent),
+            isSelected: _currentFilter == NoteFilter.recent,
           ),
           const SizedBox(height: 4),
           _buildActionButton(
             theme,
             icon: Icons.star_outline,
             label: 'Favorites',
-            onTap: () {},
+            onTap: () => setState(() => _currentFilter = NoteFilter.favorites),
+            isSelected: _currentFilter == NoteFilter.favorites,
           ),
         ],
       ),
@@ -202,6 +247,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
     required VoidCallback onTap,
     String? shortcut,
     String? badge,
+    bool isSelected = false,
   }) {
     return InkWell(
       onTap: onTap,
@@ -210,16 +256,28 @@ class _NotionSidebarState extends State<NotionSidebar> {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
+          color: isSelected 
+            ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+            : null,
         ),
         child: Row(
           children: [
-            Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
+            Icon(
+              icon, 
+              size: 16, 
+              color: isSelected 
+                ? theme.colorScheme.primary
+                : theme.colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 label,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurface,
+                  color: isSelected 
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface,
+                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
                 ),
               ),
             ),
@@ -304,18 +362,20 @@ class _NotionSidebarState extends State<NotionSidebar> {
         final note = filteredNotes[index];
         final isSelected = widget.selectedNote?.id == note.id;
         
-        return _buildNoteItem(theme, note, isSelected, index)
-            .animate(delay: (index * 50).ms)
-            .slideX(begin: -0.1, duration: 300.ms, curve: Curves.easeOut)
-            .fadeIn(duration: 300.ms);
+        return AnimatedContainer(
+          key: ValueKey(note.id),
+          duration: const Duration(milliseconds: 200),
+          child: _buildNoteItem(theme, note, isSelected, index),
+        );
       },
     );
   }
 
   Widget _buildNoteItem(ThemeData theme, Note note, bool isSelected, int index) {
-    return Card(
-      key: ValueKey(note.id),
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 1),
+      child: Card(
+      margin: EdgeInsets.zero,
       elevation: 0,
       color: isSelected 
           ? theme.colorScheme.primaryContainer.withOpacity(0.3)
@@ -392,16 +452,36 @@ class _NotionSidebarState extends State<NotionSidebar> {
                 ),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-                onSelected: (action) {
+                onSelected: (action) async {
                   switch (action) {
                     case 'delete':
-                      widget.onNoteDeleted(note);
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Delete Note'),
+                          content: Text('Are you sure you want to delete "${note.title.isEmpty ? 'Untitled' : note.title}"?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              style: TextButton.styleFrom(foregroundColor: Colors.red),
+                              child: const Text('Delete'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed == true) {
+                        widget.onNoteDeleted(note);
+                      }
                       break;
                     case 'duplicate':
-                      // Handle duplicate
+                      _duplicateNote(note);
                       break;
                     case 'export':
-                      // Handle export
+                      _exportNote(note);
                       break;
                   }
                 },
@@ -443,6 +523,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
           ),
         ),
       ),
+    ),
     ),
     );
   }
@@ -550,5 +631,95 @@ class _NotionSidebarState extends State<NotionSidebar> {
     } else {
       return 'Just now';
     }
+  }
+
+  void _showTemplateGallery() {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => Material(
+        type: MaterialType.transparency,
+        child: Center(
+          child: TemplateGallery(
+            onTemplateSelected: (template) {
+              Navigator.pop(context);
+              if (widget.onTemplateSelected != null) {
+                widget.onTemplateSelected!(template);
+              } else {
+                // Fallback to creating empty note
+                widget.onNewNote();
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _duplicateNote(Note note) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Duplicated "${note.title.isEmpty ? 'Untitled' : note.title}"'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        action: SnackBarAction(
+          label: 'View',
+          onPressed: () {
+            // Navigate to duplicated note
+            widget.onNewNote();
+          },
+        ),
+      ),
+    );
+  }
+
+  void _exportNote(Note note) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Export Note'),
+        content: const Text('Choose export format:'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _exportAsPDF(note);
+            },
+            child: const Text('PDF'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _exportAsMarkdown(note);
+            },
+            child: const Text('Markdown'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _exportAsPDF(Note note) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Exporting "${note.title}" as PDF...'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+
+  void _exportAsMarkdown(Note note) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Exporting "${note.title}" as Markdown...'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
   }
 }
