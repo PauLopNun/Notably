@@ -200,6 +200,8 @@ extension BlockTypeExtension on BlockType {
     }
   }
 
+  String get value => name;
+
   static BlockType fromString(String type) {
     switch (type) {
       case 'paragraph':
@@ -262,6 +264,8 @@ class PageBlock extends Equatable {
   final DateTime updatedAt;
   final String? parentId;
   final int position;
+  
+  String? get parentBlockId => parentId;
 
   const PageBlock({
     required this.id,
@@ -329,6 +333,8 @@ class PageBlock extends Equatable {
       position: json['position'] as int? ?? 0,
     );
   }
+
+  factory PageBlock.fromMap(Map<String, dynamic> map) => PageBlock.fromJson(map);
 
   @override
   List<Object?> get props => [

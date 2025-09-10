@@ -21,7 +21,7 @@ class QuoteBlockWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = block.content['text'] as String? ?? '';
+    final text = block.content;
     
     if (controller.text != text) {
       controller.text = text;

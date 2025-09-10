@@ -4,6 +4,7 @@ import '../models/page.dart';
 import '../models/block.dart';
 import '../models/comment.dart';
 import '../models/workspace.dart';
+import '../models/workspace_member.dart';
 import 'workspace_service.dart';
 
 final pageServiceProvider = Provider<PageService>((ref) => PageService(ref.read(workspaceServiceProvider)));
@@ -45,7 +46,8 @@ class PageService {
       
       // Load blocks
       final blocks = await getPageBlocks(pageId);
-      return page.copyWith(blocks: blocks);
+      final blocksData = blocks.map((block) => block.toJson()).toList();
+      return page.copyWith(blocks: blocksData);
     } catch (e) {
       throw Exception('Failed to fetch page: $e');
     }

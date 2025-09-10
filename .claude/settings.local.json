@@ -23,7 +23,8 @@
       "Bash(dir:*)",
       "Bash(find:*)",
       "Bash(r)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

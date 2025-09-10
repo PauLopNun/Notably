@@ -23,8 +23,8 @@ class TodoBlockWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = block.content['text'] as String? ?? '';
-    final checked = block.content['checked'] as bool? ?? false;
+    final text = block.content;
+    final checked = block.properties['checked'] as bool? ?? false;
     
     if (controller.text != text) {
       controller.text = text;

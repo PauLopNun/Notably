@@ -233,7 +233,7 @@ mixin TextBlockMixin<T extends BaseBlockWidget> on State<T> {
     textController = controller ?? TextEditingController();
     focusNode = node ?? FocusNode();
     
-    final text = widget.block.content['text'] as String? ?? '';
+    final text = widget.block.content;
     textController.text = text;
     
     textController.addListener(_onTextChanged);

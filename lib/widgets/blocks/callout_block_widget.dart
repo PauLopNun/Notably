@@ -68,8 +68,8 @@ class _CalloutBlockWidgetState extends State<CalloutBlockWidget> with TextBlockM
   void initState() {
     super.initState();
     initializeTextBlock(widget.textController, widget.focusNode);
-    _selectedIcon = widget.block.content['icon'].toString() ?? '💡';
-    _selectedStyle = widget.block.content['style'].toString() ?? 'info';
+    _selectedIcon = widget.block.properties['icon']?.toString() ?? '💡';
+    _selectedStyle = widget.block.properties['style']?.toString() ?? 'info';
   }
 
   @override

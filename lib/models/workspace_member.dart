@@ -2,6 +2,10 @@ import 'package:equatable/equatable.dart';
 
 enum MemberRole { owner, admin, member, guest }
 
+enum WorkspaceRole { owner, admin, member, guest }
+
+enum ActivityAction { created, updated, deleted, shared, archived }
+
 class WorkspaceMember extends Equatable {
   final String id;
   final String userId;

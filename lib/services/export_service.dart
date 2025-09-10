@@ -592,7 +592,7 @@ class ExportService {
             borderRadius: pw.BorderRadius.circular(4),
           ),
           child: pw.Text(
-            block.content['code'] ?? block.content['text'] ?? '',
+            block.properties['code'] as String? ?? block.content,
             style: theme.codeStyle,
           ),
         );
@@ -606,7 +606,7 @@ class ExportService {
         );
       default:
         return pw.Text(
-          block.content['text'] ?? '',
+          block.content ?? '',
           style: theme.bodyStyle,
         );
     }
@@ -615,64 +615,64 @@ class ExportService {
   String _blockToMarkdown(PageBlock block) {
     switch (block.type) {
       case BlockType.heading1:
-        return '# ${block.content['text'] ?? ''}';
+        return '# ${block.content ?? ''}';
       case BlockType.heading2:
-        return '## ${block.content['text'] ?? ''}';
+        return '## ${block.content ?? ''}';
       case BlockType.heading3:
-        return '### ${block.content['text'] ?? ''}';
+        return '### ${block.content ?? ''}';
       case BlockType.paragraph:
-        return block.content['text'] ?? '';
+        return block.content ?? '';
       case BlockType.quote:
-        return '> ${block.content['text'] ?? ''}';
+        return '> ${block.content ?? ''}';
       case BlockType.bulletedList:
-        return '- ${block.content['text'] ?? ''}';
+        return '- ${block.content ?? ''}';
       case BlockType.numberedList:
-        return '${block.position + 1}. ${block.content['text'] ?? ''}';
+        return '${block.position + 1}. ${block.content ?? ''}';
       case BlockType.todo:
         final checked = block.properties['checked'] == true ? 'x' : ' ';
-        return '- [$checked] ${block.content['text'] ?? ''}';
+        return '- [$checked] ${block.content ?? ''}';
       case BlockType.code:
-        final language = block.content['language'] ?? '';
-        final code = block.content['code'] ?? block.content['text'] ?? '';
+        final language = block.properties['language'] as String? ?? '';
+        final code = block.properties['code'] as String? ?? block.content;
         return '```$language\n$code\n```';
       case BlockType.divider:
         return '---';
       default:
-        return block.content['text'] ?? '';
+        return block.content ?? '';
     }
   }
 
   String _blockToHTML(PageBlock block) {
     switch (block.type) {
       case BlockType.heading1:
-        return '<h1>${_escapeHtml(block.content['text'] ?? '')}</h1>';
+        return '<h1>${_escapeHtml(block.content ?? '')}</h1>';
       case BlockType.heading2:
-        return '<h2>${_escapeHtml(block.content['text'] ?? '')}</h2>';
+        return '<h2>${_escapeHtml(block.content ?? '')}</h2>';
       case BlockType.heading3:
-        return '<h3>${_escapeHtml(block.content['text'] ?? '')}</h3>';
+        return '<h3>${_escapeHtml(block.content ?? '')}</h3>';
       case BlockType.paragraph:
-        return '<p>${_escapeHtml(block.content['text'] ?? '')}</p>';
+        return '<p>${_escapeHtml(block.content ?? '')}</p>';
       case BlockType.quote:
-        return '<blockquote>${_escapeHtml(block.content['text'] ?? '')}</blockquote>';
+        return '<blockquote>${_escapeHtml(block.content ?? '')}</blockquote>';
       case BlockType.bulletedList:
-        return '<li>${_escapeHtml(block.content['text'] ?? '')}</li>';
+        return '<li>${_escapeHtml(block.content ?? '')}</li>';
       case BlockType.numberedList:
-        return '<li>${_escapeHtml(block.content['text'] ?? '')}</li>';
+        return '<li>${_escapeHtml(block.content ?? '')}</li>';
       case BlockType.todo:
         final checked = block.properties['checked'] == true ? 'checked' : '';
-        return '<label><input type="checkbox" $checked disabled> ${_escapeHtml(block.content['text'] ?? '')}</label>';
+        return '<label><input type="checkbox" $checked disabled> ${_escapeHtml(block.content ?? '')}</label>';
       case BlockType.code:
-        final code = block.content['code'] ?? block.content['text'] ?? '';
+        final code = block.properties['code'] as String? ?? block.content;
         return '<pre><code>${_escapeHtml(code)}</code></pre>';
       case BlockType.divider:
         return '<hr>';
       default:
-        return '<p>${_escapeHtml(block.content['text'] ?? '')}</p>';
+        return '<p>${_escapeHtml(block.content ?? '')}</p>';
     }
   }
 
   String _blockToPlainText(PageBlock block) {
-    final text = block.content['text'] ?? '';
+    final text = block.content ?? '';
     
     switch (block.type) {
       case BlockType.heading1:
@@ -691,7 +691,7 @@ class ExportService {
         final checkbox = block.properties['checked'] == true ? '[✓]' : '[  ]';
         return '$checkbox $text';
       case BlockType.code:
-        final code = block.content['code'] ?? text;
+        final code = block.properties['code'] as String? ?? text;
         return 'CODE:\n$code\n';
       case BlockType.divider:
         return '\n${'─' * 50}\n';

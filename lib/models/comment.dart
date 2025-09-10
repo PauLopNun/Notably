@@ -102,6 +102,8 @@ class Comment extends Equatable {
     );
   }
 
+  factory Comment.fromMap(Map<String, dynamic> map) => Comment.fromJson(map);
+
   @override
   List<Object?> get props => [
         id,

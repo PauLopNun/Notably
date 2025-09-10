@@ -24,8 +24,8 @@ class _ImageBlockWidgetState extends State<ImageBlockWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = widget.block.content['url'] as String?;
-    final caption = widget.block.content['caption'] as String?;
+    final imageUrl = widget.block.properties['url'] as String?;
+    final caption = widget.block.properties['caption'] as String?;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -207,9 +207,9 @@ class _ImageBlockWidgetState extends State<ImageBlockWidget> {
         // Update block content
         // This would typically be handled by the parent widget
         // For now, we'll just update the local state
-        widget.block.content['url'] = imageUrl;
-        widget.block.content['fileName'] = file.name;
-        widget.block.content['fileSize'] = file.size;
+        widget.block.properties['url'] = imageUrl;
+        widget.block.properties['fileName'] = file.name;
+        widget.block.properties['fileSize'] = file.size;
         
         setState(() {});
       }
@@ -232,7 +232,7 @@ class _ImageBlockWidgetState extends State<ImageBlockWidget> {
   }
 
   Future<void> _showCaptionDialog() async {
-    final currentCaption = widget.block.content['caption'] as String? ?? '';
+    final currentCaption = widget.block.properties['caption'] as String? ?? '';
     final controller = TextEditingController(text: currentCaption);
 
     final result = await showDialog<String>(
@@ -262,7 +262,7 @@ class _ImageBlockWidgetState extends State<ImageBlockWidget> {
     );
 
     if (result != null) {
-      widget.block.content['caption'] = result;
+      widget.block.properties['caption'] = result;
       setState(() {});
     }
 
