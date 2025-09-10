@@ -45,29 +45,32 @@ class _NotionBlockEditorState extends State<NotionBlockEditor> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
               border: Border(
-                bottom: BorderSide(color: theme.dividerColor.withOpacity(0.3)),
+                bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3)),
               ),
             ),
-            child: Row(
-              children: [
-                _buildToolbarButton(theme, Icons.format_bold, 'Bold'),
-                _buildToolbarButton(theme, Icons.format_italic, 'Italic'),
-                _buildToolbarButton(theme, Icons.format_underlined, 'Underline'),
-                const SizedBox(width: 8),
-                Container(width: 1, height: 20, color: theme.dividerColor),
-                const SizedBox(width: 8),
-                _buildToolbarButton(theme, Icons.format_list_bulleted, 'Bullet List'),
-                _buildToolbarButton(theme, Icons.format_list_numbered, 'Number List'),
-                _buildToolbarButton(theme, Icons.format_quote, 'Quote'),
-                const SizedBox(width: 8),
-                Container(width: 1, height: 20, color: theme.dividerColor),
-                const SizedBox(width: 8),
-                _buildToolbarButton(theme, Icons.code, 'Code'),
-                _buildToolbarButton(theme, Icons.link, 'Link'),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildToolbarButton(theme, Icons.format_bold, 'Bold'),
+                  _buildToolbarButton(theme, Icons.format_italic, 'Italic'),
+                  _buildToolbarButton(theme, Icons.format_underlined, 'Underline'),
+                  const SizedBox(width: 8),
+                  Container(width: 1, height: 20, color: theme.dividerColor),
+                  const SizedBox(width: 8),
+                  _buildToolbarButton(theme, Icons.format_list_bulleted, 'Bullet List'),
+                  _buildToolbarButton(theme, Icons.format_list_numbered, 'Number List'),
+                  _buildToolbarButton(theme, Icons.format_quote, 'Quote'),
+                  const SizedBox(width: 8),
+                  Container(width: 1, height: 20, color: theme.dividerColor),
+                  const SizedBox(width: 8),
+                  _buildToolbarButton(theme, Icons.code, 'Code'),
+                  _buildToolbarButton(theme, Icons.link, 'Link'),
+                ],
+              ),
             ),
           ),
           

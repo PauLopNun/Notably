@@ -24,7 +24,7 @@ class PageService {
           .order('position')
           .order('created_at');
 
-      final pages = response.map<NotionPage>((item) => NotionPage.fromMap(item)).toList();
+      final pages = response.map<NotionPage>((item) => NotionPage.fromJson(item)).toList();
       
       // Build hierarchy
       return _buildPageHierarchy(pages);
@@ -41,7 +41,7 @@ class PageService {
           .eq('id', pageId)
           .single();
 
-      final page = NotionPage.fromMap(response);
+      final page = NotionPage.fromJson(response);
       
       // Load blocks
       final blocks = await getPageBlocks(pageId);
@@ -99,7 +99,7 @@ class PageService {
         details: {'title': title},
       );
 
-      return NotionPage.fromMap(response);
+      return NotionPage.fromJson(response);
     } catch (e) {
       throw Exception('Failed to create page: $e');
     }
@@ -328,7 +328,7 @@ class PageService {
           .textSearch('title', query)
           .order('updated_at', ascending: false);
 
-      return response.map<NotionPage>((item) => NotionPage.fromMap(item)).toList();
+      return response.map<NotionPage>((item) => NotionPage.fromJson(item)).toList();
     } catch (e) {
       throw Exception('Failed to search pages: $e');
     }

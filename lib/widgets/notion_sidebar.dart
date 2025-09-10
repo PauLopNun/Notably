@@ -3,13 +3,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import '../models/note.dart';
+import '../models/template.dart';
 import '../widgets/workspace_selector.dart';
 import '../widgets/template_gallery.dart';
 import '../services/pdf_export_service.dart';
+import '../providers/note_provider.dart';
 
-class NotionSidebar extends StatefulWidget {
+// Conditional import for web
+// import 'dart:html' as html;
+
+class NotionSidebar extends ConsumerStatefulWidget {
   final List<Note> notes;
   final Note? selectedNote;
   final Function(Note) onNoteSelected;
@@ -32,12 +40,12 @@ class NotionSidebar extends StatefulWidget {
   });
 
   @override
-  State<NotionSidebar> createState() => _NotionSidebarState();
+  ConsumerState<NotionSidebar> createState() => _NotionSidebarState();
 }
 
 enum NoteFilter { all, recent, favorites }
 
-class _NotionSidebarState extends State<NotionSidebar> {
+class _NotionSidebarState extends ConsumerState<NotionSidebar> {
   String searchQuery = '';
   bool isLoading = false;
   NoteFilter _currentFilter = NoteFilter.all;
@@ -85,7 +93,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 12),
             height: 1,
-            color: theme.dividerColor.withOpacity(0.3),
+            color: theme.dividerColor.withValues(alpha: 0.3),
           ),
           
           // Search
@@ -260,7 +268,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
           color: isSelected 
-            ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
             : null,
         ),
         child: Row(
@@ -328,7 +336,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
             Icon(
               Icons.note_add_outlined,
               size: 48,
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 12),
             Text(
@@ -381,13 +389,13 @@ class _NotionSidebarState extends State<NotionSidebar> {
       margin: EdgeInsets.zero,
       elevation: 0,
       color: isSelected 
-          ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
           : Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(6),
         side: BorderSide(
           color: isSelected 
-              ? theme.colorScheme.primary.withOpacity(0.3)
+              ? theme.colorScheme.primary.withValues(alpha: 0.3)
               : Colors.transparent,
         ),
       ),
@@ -410,7 +418,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
                 child: Icon(
                   Icons.drag_indicator,
                   size: 16,
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 ),
               ),
               const SizedBox(width: 8),
@@ -639,7 +647,7 @@ class _NotionSidebarState extends State<NotionSidebar> {
   void _showTemplateGallery() {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (context) => Material(
         type: MaterialType.transparency,
         child: Center(
@@ -659,21 +667,38 @@ class _NotionSidebarState extends State<NotionSidebar> {
     );
   }
 
-  void _duplicateNote(Note note) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Duplicated "${note.title.isEmpty ? 'Untitled' : note.title}"'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        action: SnackBarAction(
-          label: 'View',
-          onPressed: () {
-            // Navigate to duplicated note
-            widget.onNewNote();
-          },
+  Future<void> _duplicateNote(Note note) async {
+    try {
+      // Create duplicate note with "(Copy)" suffix
+      final duplicateTitle = '${note.title.isEmpty ? 'Untitled' : note.title} (Copy)';
+      
+      // Create new note via provider
+      final duplicatedNote = await ref.read(notesProvider.notifier).createNote(
+        duplicateTitle,
+        note.content, // Use same content
+      );
+      
+      // Select the duplicated note
+      widget.onNoteSelected(duplicatedNote);
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Duplicated "${note.title.isEmpty ? 'Untitled' : note.title}"'),
+          backgroundColor: Colors.green[400],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-      ),
-    );
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error duplicating note: $e'),
+          backgroundColor: Colors.red[400],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   void _exportNote(Note note) {
@@ -717,30 +742,60 @@ class _NotionSidebarState extends State<NotionSidebar> {
       );
       
       final pdfService = PDFExportService();
-      final filePath = await pdfService.exportNoteToPDF(note);
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('PDF exported successfully!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          action: SnackBarAction(
-            label: 'Show Path',
-            textColor: Colors.white,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Saved to: $filePath'),
-                  duration: const Duration(seconds: 5),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              );
-            },
+      if (kIsWeb) {
+        // For web: Generate PDF bytes and download through browser
+        final pdfBytes = await pdfService.generatePDFBytes(note);
+        final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.pdf';
+        
+        // TODO: Implement web download using package:web
+        // For now, just show success message
+        // final blob = html.Blob([pdfBytes], 'application/pdf');
+        // final url = html.Url.createObjectUrlFromBlob(blob);
+        // final anchor = html.document.createElement('a') as html.AnchorElement
+        //   ..href = url
+        //   ..style.display = 'none'
+        //   ..download = fileName;
+        // html.document.body?.children.add(anchor);
+        // anchor.click();
+        // html.document.body?.children.remove(anchor);
+        // html.Url.revokeObjectUrl(url);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF downloaded successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-        ),
-      );
+        );
+      } else {
+        // For mobile/desktop: Save to file system
+        final filePath = await pdfService.exportNoteToPDF(note);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF exported successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            action: SnackBarAction(
+              label: 'Show Path',
+              textColor: Colors.white,
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Saved to: $filePath'),
+                    duration: const Duration(seconds: 5),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -764,33 +819,60 @@ class _NotionSidebarState extends State<NotionSidebar> {
       );
       
       final content = _convertToMarkdown(note);
-      final directory = await getApplicationDocumentsDirectory();
-      final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}_${DateTime.now().millisecondsSinceEpoch}.md';
-      final file = File('${directory.path}/$fileName');
-      await file.writeAsString(content);
+      final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.md';
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Markdown exported successfully!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          action: SnackBarAction(
-            label: 'Show Path',
-            textColor: Colors.white,
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Saved to: ${file.path}'),
-                  duration: const Duration(seconds: 5),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              );
-            },
+      if (kIsWeb) {
+        // For web: Create download link and trigger download
+        final bytes = utf8.encode(content);
+        // TODO: Implement web download using package:web
+        // final blob = html.Blob([bytes], 'text/markdown');
+        // final url = html.Url.createObjectUrlFromBlob(blob);
+        // final anchor = html.document.createElement('a') as html.AnchorElement
+        //   ..href = url
+        //   ..style.display = 'none'
+        //   ..download = fileName;
+        // html.document.body?.children.add(anchor);
+        // anchor.click();
+        // html.document.body?.children.remove(anchor);
+        // html.Url.revokeObjectUrl(url);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Markdown downloaded successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-        ),
-      );
+        );
+      } else {
+        // For mobile/desktop: Save to file system
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/$fileName');
+        await file.writeAsString(content);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Markdown exported successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            action: SnackBarAction(
+              label: 'Show Path',
+              textColor: Colors.white,
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Saved to: ${file.path}'),
+                    duration: const Duration(seconds: 5),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

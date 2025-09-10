@@ -27,7 +27,7 @@ class WorkspaceService {
 
       return response.map<Workspace>((item) {
         final workspace = item['workspaces'];
-        return Workspace.fromMap({
+        return Workspace.fromJson({
           ...workspace,
           'user_role': item['role'],
         });
@@ -60,7 +60,7 @@ class WorkspaceService {
         throw Exception('Access denied to workspace');
       }
 
-      return Workspace.fromMap({
+      return Workspace.fromJson({
         ...response,
         'user_role': memberResponse['role'],
       });
@@ -93,7 +93,7 @@ class WorkspaceService {
         'role': 'owner',
       });
 
-      return Workspace.fromMap(workspaceResponse);
+      return Workspace.fromJson(workspaceResponse);
     } catch (e) {
       throw Exception('Failed to create workspace: $e');
     }

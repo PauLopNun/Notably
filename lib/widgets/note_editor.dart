@@ -143,6 +143,7 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
           title: '${_selectedCategory.split(' ').first} ${title}',
           content: content,
           createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
         );
         
         await ref.read(notesProvider.notifier).addNote(newNote);
@@ -160,9 +161,10 @@ class _NoteEditorState extends ConsumerState<NoteEditor> {
           title: _applyCategoryPrefix(widget.note!.title, title),
           content: content,
           createdAt: widget.note!.createdAt,
+          updatedAt: DateTime.now(),
         );
         
-        await ref.read(notesProvider.notifier).updateNote(updatedNote);
+        await ref.read(notesProvider.notifier).updateNoteObject(updatedNote);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Nota actualizada exitosamente'),

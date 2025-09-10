@@ -127,7 +127,7 @@ class _NotionSearchOverlayState extends State<NotionSearchOverlay>
         animation: _fadeAnimation,
         builder: (context, child) {
           return Container(
-            color: Colors.black.withOpacity(0.5 * _fadeAnimation.value),
+            color: Colors.black.withValues(alpha: 0.5 * _fadeAnimation.value),
             child: Center(
               child: SlideTransition(
                 position: _slideAnimation,
@@ -141,11 +141,11 @@ class _NotionSearchOverlayState extends State<NotionSearchOverlay>
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.3),
+                        color: theme.colorScheme.outline.withValues(alpha: 0.3),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -173,7 +173,7 @@ class _NotionSearchOverlayState extends State<NotionSearchOverlay>
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.2),
+            color: theme.colorScheme.outline.withValues(alpha: 0.2),
           ),
         ),
       ),
@@ -229,7 +229,7 @@ class _NotionSearchOverlayState extends State<NotionSearchOverlay>
               Icon(
                 Icons.search_off,
                 size: 48,
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
               ),
               const SizedBox(height: 16),
               Text(
@@ -245,7 +245,7 @@ class _NotionSearchOverlayState extends State<NotionSearchOverlay>
                 Text(
                   'Try searching for different keywords',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -284,12 +284,12 @@ class _NotionSearchOverlayState extends State<NotionSearchOverlay>
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
       decoration: BoxDecoration(
         color: isSelected 
-            ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(6),
         border: isSelected
             ? Border.all(
-                color: theme.colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
               )
             : null,
       ),
@@ -350,7 +350,7 @@ class _NotionSearchOverlayState extends State<NotionSearchOverlay>
                     Text(
                       _formatDate(note.updatedAt),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                         fontSize: 11,
                       ),
                     ),
@@ -363,7 +363,7 @@ class _NotionSearchOverlayState extends State<NotionSearchOverlay>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: Text(

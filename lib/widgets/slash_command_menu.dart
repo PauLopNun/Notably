@@ -93,7 +93,7 @@ class _SlashCommandMenuState extends State<SlashCommandMenu> {
     ),
   ];
 
-  String _searchQuery = '';
+  final String _searchQuery = '';
   int _selectedIndex = 0;
 
   List<SlashCommand> get _filteredCommands {
@@ -116,14 +116,14 @@ class _SlashCommandMenuState extends State<SlashCommandMenu> {
         elevation: 8,
         borderRadius: BorderRadius.circular(8),
         color: theme.colorScheme.surface,
-        shadowColor: theme.shadowColor.withOpacity(0.2),
+        shadowColor: theme.shadowColor.withValues(alpha: 0.2),
         child: Container(
           width: 320,
           constraints: const BoxConstraints(maxHeight: 400),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.2),
+              color: theme.colorScheme.outline.withValues(alpha: 0.2),
             ),
           ),
           child: Column(
@@ -135,7 +135,7 @@ class _SlashCommandMenuState extends State<SlashCommandMenu> {
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
-                      color: theme.colorScheme.outline.withOpacity(0.1),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -181,7 +181,7 @@ class _SlashCommandMenuState extends State<SlashCommandMenu> {
                           vertical: 8,
                         ),
                         color: isSelected
-                            ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+                            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
                             : null,
                         child: Row(
                           children: [
@@ -246,7 +246,7 @@ class _SlashCommandMenuState extends State<SlashCommandMenu> {
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: theme.colorScheme.outline.withOpacity(0.1),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.1),
                     ),
                   ),
                 ),

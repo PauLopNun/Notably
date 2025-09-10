@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../theme/notion_theme.dart';
 import '../services/google_auth_service.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
@@ -127,7 +126,6 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   }
 
   void _showSuccessSnackBar(String message) {
-    final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -201,7 +199,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -251,11 +249,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.3),
+          color: theme.colorScheme.outline.withValues(alpha: 0.3),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),

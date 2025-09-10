@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../models/template.dart';
 
 class TemplateGallery extends StatefulWidget {
   final Function(NotionTemplate) onTemplateSelected;
@@ -153,10 +154,10 @@ class _TemplateGalleryState extends State<TemplateGallery> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
+        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -179,7 +180,7 @@ class _TemplateGalleryState extends State<TemplateGallery> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.3)),
+          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3)),
         ),
       ),
       child: Row(
@@ -187,7 +188,7 @@ class _TemplateGalleryState extends State<TemplateGallery> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -256,8 +257,8 @@ class _TemplateGalleryState extends State<TemplateGallery> {
                   ),
                   side: BorderSide(
                     color: isSelected
-                        ? theme.colorScheme.primary.withOpacity(0.3)
-                        : theme.colorScheme.outline.withOpacity(0.2),
+                        ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                        : theme.colorScheme.outline.withValues(alpha: 0.2),
                   ),
                 ),
               ).animate(delay: (index * 50).ms).slideX(
@@ -299,10 +300,10 @@ class _TemplateGalleryState extends State<TemplateGallery> {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.2),
+            color: theme.colorScheme.outline.withValues(alpha: 0.2),
           ),
         ),
         child: Column(
@@ -313,12 +314,12 @@ class _TemplateGalleryState extends State<TemplateGallery> {
               height: 120,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.1),
+                color: theme.colorScheme.primaryContainer.withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               ),
               child: Center(
                 child: Text(
-                  template.icon,
+                  template.icon ?? '',
                   style: const TextStyle(fontSize: 48),
                 ),
               ),
@@ -341,7 +342,7 @@ class _TemplateGalleryState extends State<TemplateGallery> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      template.description,
+                      template.description ?? '',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -389,24 +390,4 @@ class _TemplateGalleryState extends State<TemplateGallery> {
       curve: Curves.easeOut,
     ).fadeIn();
   }
-}
-
-class NotionTemplate {
-  final String id;
-  final String name;
-  final String description;
-  final String category;
-  final String icon;
-  final String previewImage;
-  final List<Map<String, dynamic>> blocks;
-
-  NotionTemplate({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.category,
-    required this.icon,
-    required this.previewImage,
-    required this.blocks,
-  });
 }

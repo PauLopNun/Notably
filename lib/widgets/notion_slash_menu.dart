@@ -73,7 +73,11 @@ class _NotionSlashMenuState extends State<NotionSlashMenu> {
       BlockType.code,
       BlockType.divider,
       BlockType.callout,
+      BlockType.toggle,
       BlockType.image,
+      BlockType.table,
+      BlockType.bookmark,
+      BlockType.equation,
     ];
   }
 
@@ -101,6 +105,8 @@ class _NotionSlashMenuState extends State<NotionSlashMenu> {
         return ['divider', 'separator', 'line', 'break'];
       case BlockType.callout:
         return ['callout', 'note', 'info', 'highlight'];
+      case BlockType.toggle:
+        return ['toggle', 'collapse', 'expand', 'fold'];
       case BlockType.image:
         return ['image', 'picture', 'photo', 'img'];
       case BlockType.video:
@@ -113,6 +119,14 @@ class _NotionSlashMenuState extends State<NotionSlashMenu> {
         return ['table', 'grid', 'spreadsheet'];
       case BlockType.database:
         return ['database', 'data', 'collection'];
+      case BlockType.bookmark:
+        return ['bookmark', 'link', 'save'];
+      case BlockType.equation:
+        return ['equation', 'math', 'formula'];
+      case BlockType.column:
+        return ['column', 'layout'];
+      case BlockType.columnList:
+        return ['columns', 'layout', 'grid'];
     }
   }
 

@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/page.dart';
 import '../models/block.dart';
 import '../models/comment.dart';
-import '../models/workspace.dart';
 import '../services/page_service.dart';
 import 'workspace_provider.dart';
+
+// Enums for permissions and roles
+enum WorkspaceRole { owner, admin, member, guest }
+enum PagePermissionType { edit, comment, view }
 
 // Service provider
 final pageServiceProvider = Provider<PageService>((ref) => PageService(ref.read(workspaceServiceProvider)));
@@ -246,7 +249,7 @@ class PageBlocksNotifier extends StateNotifier<AsyncValue<List<PageBlock>>> {
     final blocks = currentBlocks;
     final blockIndex = blocks.indexWhere((b) => b.id == blockId);
     if (blockIndex != -1) {
-      final updatedBlock = blocks[blockIndex].copyWith(content: content);
+      final updatedBlock = blocks[blockIndex].copyWith(content: content.toString());
       final updatedBlocks = List<PageBlock>.from(blocks);
       updatedBlocks[blockIndex] = updatedBlock;
       

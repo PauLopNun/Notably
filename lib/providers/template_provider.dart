@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/template.dart';
 import '../models/page.dart';
 import '../services/template_service.dart';
-import '../services/page_service.dart';
+import 'page_provider.dart';
 
 // Template service provider
 final templateServiceProvider = Provider<TemplateService>((ref) {

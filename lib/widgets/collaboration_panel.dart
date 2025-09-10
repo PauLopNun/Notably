@@ -118,7 +118,7 @@ class _CollaborationPanelState extends State<CollaborationPanel>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.5)),
+          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
         ),
       ),
       child: Row(
@@ -126,7 +126,7 @@ class _CollaborationPanelState extends State<CollaborationPanel>
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -171,7 +171,7 @@ class _CollaborationPanelState extends State<CollaborationPanel>
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.3)),
+          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3)),
         ),
       ),
       child: TabBar(
@@ -288,7 +288,7 @@ class _CollaborationPanelState extends State<CollaborationPanel>
                   Icon(
                     Icons.people_outline,
                     size: 64,
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -405,7 +405,7 @@ class _CollaborationPanelState extends State<CollaborationPanel>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
+          border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -460,7 +460,7 @@ class _CollaborationPanelState extends State<CollaborationPanel>
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -501,7 +501,7 @@ class _CollaborationPanelState extends State<CollaborationPanel>
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: role == 'editor'
-                  ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+                  ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
                   : theme.colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(12),
             ),
@@ -532,12 +532,12 @@ class _CollaborationPanelState extends State<CollaborationPanel>
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isSelected
-            ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
             : null,
         border: Border.all(
           color: isSelected
-              ? theme.colorScheme.primary.withOpacity(0.3)
-              : theme.colorScheme.outline.withOpacity(0.2),
+              ? theme.colorScheme.primary.withValues(alpha: 0.3)
+              : theme.colorScheme.outline.withValues(alpha: 0.2),
         ),
         borderRadius: BorderRadius.circular(8),
       ),

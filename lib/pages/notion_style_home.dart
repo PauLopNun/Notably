@@ -1,18 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import '../providers/note_provider.dart';
 import '../models/note.dart';
 import '../widgets/notion_sidebar.dart';
 import '../widgets/notion_content_area.dart';
 import '../widgets/notion_properties_panel.dart';
-import '../widgets/notion_search_overlay.dart';
 import '../widgets/collaboration_panel.dart';
 import '../widgets/advanced_search_dialog.dart';
 import '../services/pdf_export_service.dart';
-import '../services/collaboration_service.dart';
 
 class NotionStyleHome extends ConsumerStatefulWidget {
   const NotionStyleHome({super.key});
@@ -213,46 +210,7 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  Future<void> _shareForCollaboration(Note note) async {
-    final email = await _showEmailDialog();
-    if (email != null && email.isNotEmpty) {
-      try {
-        final collaborationService = CollaborationService();
-        await collaborationService.inviteCollaborator(note.id, email);
-        _showSnackBar('Collaboration invite sent to $email');
-      } catch (e) {
-        _showSnackBar('Error sending invite: $e', isError: true);
-      }
-    }
-  }
 
-  Future<String?> _showEmailDialog() async {
-    final controller = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Invite Collaborator'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Enter email address',
-            labelText: 'Email',
-          ),
-          keyboardType: TextInputType.emailAddress,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, null),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('Send Invite'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -308,7 +266,7 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
                       },
                       child: Container(
                         width: 4,
-                        color: theme.dividerColor.withOpacity(0.3),
+                        color: theme.dividerColor.withValues(alpha: 0.3),
                       ),
                     ),
                   ),

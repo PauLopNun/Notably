@@ -21,7 +21,9 @@
       "WebSearch",
       "Bash(set JAVA_OPTS=-Dfile.encoding=UTF-8)",
       "Bash(dir:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(r)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/workspace.dart';
+import '../models/workspace_member.dart';
 import '../services/workspace_service.dart';
 
 // Service provider

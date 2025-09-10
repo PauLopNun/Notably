@@ -113,10 +113,10 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
               ? Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: theme.colorScheme.outline.withOpacity(0.2),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.2),
                     ),
                   ),
                   child: SingleChildScrollView(
@@ -141,7 +141,7 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 12),
                         height: 1,
-                        color: theme.colorScheme.outline.withOpacity(0.2),
+                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
                       ),
                       
                       // Actions
@@ -193,7 +193,7 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
         margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+              ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
               : null,
           borderRadius: BorderRadius.circular(6),
         ),
@@ -205,7 +205,7 @@ class _WorkspaceSelectorState extends State<WorkspaceSelector> {
               height: 28,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? theme.colorScheme.primary.withOpacity(0.1)
+                    ? theme.colorScheme.primary.withValues(alpha: 0.1)
                     : theme.colorScheme.surfaceContainerHigh,
                 borderRadius: BorderRadius.circular(4),
               ),

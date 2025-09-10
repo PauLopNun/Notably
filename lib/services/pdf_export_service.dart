@@ -1,6 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -9,11 +8,16 @@ import '../models/note.dart';
 
 class PDFExportService {
   Future<String> exportNoteToPDF(Note note) async {
+    // For web, this method shouldn't be called. Use generatePDFBytes() instead.
+    if (kIsWeb) {
+      throw UnsupportedError('Use generatePDFBytes() for web downloads');
+    }
+    
     final pdf = pw.Document();
     
-    // Load a font for better text rendering
-    final fontData = await PdfGoogleFonts.interRegular();
-    final boldFontData = await PdfGoogleFonts.interBold();
+    // Use built-in fonts for web compatibility
+    final fontData = pw.Font.helvetica();
+    final boldFontData = pw.Font.helveticaBold();
     
     pdf.addPage(
       pw.MultiPage(
@@ -104,7 +108,10 @@ class PDFExportService {
   }
 
   Future<void> sharePDF(Note note) async {
-    final pdfBytes = await _generatePDFBytes(note);
+    if (kIsWeb) {
+      throw UnsupportedError('Share PDF not supported on web');
+    }
+    final pdfBytes = await generatePDFBytes(note);
     await Printing.sharePdf(
       bytes: pdfBytes,
       filename: '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.pdf',
@@ -112,16 +119,20 @@ class PDFExportService {
   }
 
   Future<void> printPDF(Note note) async {
-    final pdfBytes = await _generatePDFBytes(note);
+    if (kIsWeb) {
+      throw UnsupportedError('Print PDF not supported on web');
+    }
+    final pdfBytes = await generatePDFBytes(note);
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdfBytes,
     );
   }
 
-  Future<Uint8List> _generatePDFBytes(Note note) async {
+  Future<Uint8List> generatePDFBytes(Note note) async {
     final pdf = pw.Document();
-    final fontData = await PdfGoogleFonts.interRegular();
-    final boldFontData = await PdfGoogleFonts.interBold();
+    // Use built-in fonts for web compatibility - no external font loading
+    final fontData = pw.Font.helvetica();
+    final boldFontData = pw.Font.helveticaBold();
     
     pdf.addPage(
       pw.MultiPage(

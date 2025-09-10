@@ -30,7 +30,7 @@ class NotionContentArea extends StatefulWidget {
 class _NotionContentAreaState extends State<NotionContentArea> {
   late TextEditingController _titleController;
   late QuillController _contentController;
-  bool _isEditing = false;
+  final bool _isEditing = false;
   String _selectedEmoji = '📄';
 
   @override
@@ -57,13 +57,8 @@ class _NotionContentAreaState extends State<NotionContentArea> {
     if (widget.note?.content.isNotEmpty == true) {
       try {
         // Try to parse existing content as Quill delta
-        if (widget.note!.content is List) {
-          document = Document.fromJson(widget.note!.content);
-        } else {
-          // If content is a string or other type, create a simple text document
-          document = Document()..insert(0, widget.note!.content.toString());
-        }
-      } catch (e) {
+        document = Document.fromJson(widget.note!.content);
+            } catch (e) {
         // If parsing fails, create document with plain text content
         document = Document()..insert(0, widget.note?.title ?? 'Start writing...');
       }
@@ -145,7 +140,7 @@ class _NotionContentAreaState extends State<NotionContentArea> {
             Icon(
               Icons.note_add_outlined,
               size: 80,
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
             )
             .animate(onPlay: (controller) => controller.repeat(reverse: true))
             .scale(duration: 2.seconds, begin: const Offset(1.0, 1.0), end: const Offset(1.1, 1.1)),
@@ -162,7 +157,7 @@ class _NotionContentAreaState extends State<NotionContentArea> {
             Text(
               'Choose a note from the sidebar or create a new one',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
               ),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1, end: 0),
@@ -224,7 +219,7 @@ class _NotionContentAreaState extends State<NotionContentArea> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.3)),
+          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.3)),
         ),
       ),
       child: Column(
@@ -262,7 +257,7 @@ class _NotionContentAreaState extends State<NotionContentArea> {
                   decoration: InputDecoration(
                     hintText: 'Untitled',
                     hintStyle: theme.textTheme.headlineMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                     ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,

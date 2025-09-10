@@ -75,9 +75,9 @@ class DragDropIndicator extends StatelessWidget {
 
   Matrix4? _getTransform() {
     if (isDropTarget) {
-      return Matrix4.identity()..scaleByDouble(1.02, 1.02, 1.0, 1.0);
+      return Matrix4.identity()..scale(1.02, 1.02, 1.0);
     } else if (isDragging) {
-      return Matrix4.identity()..scaleByDouble(0.98, 0.98, 1.0, 1.0);
+      return Matrix4.identity()..scale(0.98, 0.98, 1.0);
     }
     return null;
   }

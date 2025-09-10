@@ -168,7 +168,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
         animation: _fadeAnimation,
         builder: (context, child) {
           return Container(
-            color: Colors.black.withOpacity(0.6 * _fadeAnimation.value),
+            color: Colors.black.withValues(alpha: 0.6 * _fadeAnimation.value),
             child: Center(
               child: SlideTransition(
                 position: _slideAnimation,
@@ -182,11 +182,11 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
                       color: theme.colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.2),
+                        color: theme.colorScheme.outline.withValues(alpha: 0.2),
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.15),
+                          color: Colors.black.withValues(alpha: 0.15),
                           blurRadius: 30,
                           offset: const Offset(0, 12),
                         ),
@@ -218,7 +218,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.1),
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
           ),
         ),
       ),
@@ -227,7 +227,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -245,7 +245,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
               decoration: InputDecoration(
                 hintText: 'Search in all notes...',
                 hintStyle: TextStyle(
-                  color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
@@ -275,7 +275,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
           color: theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.3),
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
           ),
         ),
         child: Text(
@@ -320,7 +320,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
                   });
                 },
                 backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                selectedColor: theme.colorScheme.primaryContainer.withOpacity(0.5),
+                selectedColor: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
                 labelStyle: TextStyle(
                   color: isSelected
                       ? theme.colorScheme.primary
@@ -330,8 +330,8 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
                 ),
                 side: BorderSide(
                   color: isSelected
-                      ? theme.colorScheme.primary.withOpacity(0.3)
-                      : theme.colorScheme.outline.withOpacity(0.2),
+                      ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                      : theme.colorScheme.outline.withValues(alpha: 0.2),
                 ),
               ).animate(delay: (index * 50).ms).slideX(
                 begin: -0.1,
@@ -371,7 +371,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
           Icon(
             hasQuery ? Icons.search_off : Icons.auto_awesome,
             size: 64,
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.3),
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
           Text(
@@ -386,7 +386,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
                 ? 'Try different keywords or adjust filters'
                 : 'Search across all your notes and content',
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
           ),
@@ -424,12 +424,12 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: isSelected 
-            ? theme.colorScheme.primaryContainer.withOpacity(0.3)
+            ? theme.colorScheme.primaryContainer.withValues(alpha: 0.3)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         border: isSelected
             ? Border.all(
-                color: theme.colorScheme.primary.withOpacity(0.3),
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
               )
             : null,
       ),
@@ -533,7 +533,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
@@ -562,7 +562,7 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.1),
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
           ),
         ),
       ),

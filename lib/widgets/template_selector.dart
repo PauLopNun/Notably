@@ -268,7 +268,7 @@ class _TemplateSelectorState extends State<TemplateSelector> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      TemplateCategory.fromString(template.category).displayName,
+                      TemplateCategoryExtension.fromString(template.category).displayName,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSecondaryContainer,
                         fontWeight: FontWeight.w500,

@@ -396,10 +396,28 @@ class _BlockTypeSelector extends StatelessWidget {
         return Icons.horizontal_rule;
       case BlockType.callout:
         return Icons.campaign;
+      case BlockType.toggle:
+        return Icons.expand_more;
       case BlockType.table:
         return Icons.table_chart;
       case BlockType.image:
         return Icons.image;
+      case BlockType.embed:
+        return Icons.code;
+      case BlockType.file:
+        return Icons.attach_file;
+      case BlockType.bookmark:
+        return Icons.bookmark;
+      case BlockType.equation:
+        return Icons.functions;
+      case BlockType.column:
+        return Icons.view_column;
+      case BlockType.columnList:
+        return Icons.view_agenda;
+      case BlockType.video:
+        return Icons.videocam;
+      case BlockType.database:
+        return Icons.storage;
     }
   }
 
@@ -427,10 +445,28 @@ class _BlockTypeSelector extends StatelessWidget {
         return 'Divider';
       case BlockType.callout:
         return 'Callout';
+      case BlockType.toggle:
+        return 'Toggle';
       case BlockType.table:
         return 'Table';
       case BlockType.image:
         return 'Image';
+      case BlockType.embed:
+        return 'Embed';
+      case BlockType.file:
+        return 'File';
+      case BlockType.bookmark:
+        return 'Bookmark';
+      case BlockType.equation:
+        return 'Equation';
+      case BlockType.column:
+        return 'Column';
+      case BlockType.columnList:
+        return 'Column List';
+      case BlockType.video:
+        return 'Video';
+      case BlockType.database:
+        return 'Database';
     }
   }
 }

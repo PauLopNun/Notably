@@ -34,7 +34,7 @@ class _CodeBlockWidgetState extends State<CodeBlockWidget> with TextBlockMixin {
   void initState() {
     super.initState();
     initializeTextBlock(widget.textController, widget.focusNode);
-    _selectedLanguage = widget.block.content['language']?.toString() ?? 'plain';
+    _selectedLanguage = widget.block.content['language'].toString() ?? 'plain';
   }
 
   @override

@@ -42,14 +42,6 @@ class _NoteEditorPageState extends State<NoteEditorPage> {
     }
   }
 
-  void _onContentChanged(String content) {
-    _currentContent = content;
-    if (!_hasChanges) {
-      setState(() {
-        _hasChanges = true;
-      });
-    }
-  }
 
 
   @override

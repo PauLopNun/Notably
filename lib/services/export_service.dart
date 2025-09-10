@@ -134,7 +134,8 @@ class ExportService {
     }
 
     // Convert blocks to markdown
-    for (final block in page.blocks) {
+    for (final blockData in page.blocks) {
+      final block = PageBlock.fromJson(blockData);
       buffer.writeln(_blockToMarkdown(block));
     }
 
@@ -180,7 +181,8 @@ class ExportService {
     
     // Page content
     buffer.writeln('        <div class="content">');
-    for (final block in page.blocks) {
+    for (final blockData in page.blocks) {
+      final block = PageBlock.fromJson(blockData);
       buffer.writeln('            ${_blockToHTML(block)}');
     }
     buffer.writeln('        </div>');
@@ -225,7 +227,8 @@ class ExportService {
     buffer.writeln();
     
     // Convert blocks to plain text
-    for (final block in page.blocks) {
+    for (final blockData in page.blocks) {
+      final block = PageBlock.fromJson(blockData);
       buffer.writeln(_blockToPlainText(block));
       buffer.writeln();
     }
@@ -330,7 +333,7 @@ class ExportService {
   Future<void> shareFile(ExportResult result) async {
     if (result.isSuccess && result.filePath != null) {
       final xFile = XFile(result.filePath!);
-      await Share.shareXFiles([xFile]);
+      await Share.shareXFiles([xFile], text: 'Exported from Notably');
     }
   }
 
@@ -414,7 +417,8 @@ class ExportService {
     );
 
     // Convert blocks to PDF widgets
-    for (final block in page.blocks) {
+    for (final blockData in page.blocks) {
+      final block = PageBlock.fromJson(blockData);
       widgets.add(_blockToPDFWidget(block, theme));
       widgets.add(pw.SizedBox(height: 10));
     }
@@ -436,15 +440,14 @@ class ExportService {
             workspace.name,
             style: theme.titleStyle.copyWith(fontSize: 32),
           ),
-          if (workspace.description != null)
-            pw.Container(
-              margin: const pw.EdgeInsets.only(top: 10),
-              child: pw.Text(
-                workspace.description!,
-                style: theme.subtitleStyle,
-                textAlign: pw.TextAlign.center,
-              ),
+          pw.Container(
+            margin: const pw.EdgeInsets.only(top: 10),
+            child: pw.Text(
+              workspace.description!,
+              style: theme.subtitleStyle,
+              textAlign: pw.TextAlign.center,
             ),
+          ),
           pw.SizedBox(height: 40),
           pw.Text(
             '${pages.length} páginas',
@@ -504,22 +507,22 @@ class ExportService {
     switch (block.type) {
       case BlockType.heading1:
         return pw.Text(
-          block.content['text'] ?? '',
+          block.content,
           style: theme.heading1Style,
         );
       case BlockType.heading2:
         return pw.Text(
-          block.content['text'] ?? '',
+          block.content,
           style: theme.heading2Style,
         );
       case BlockType.heading3:
         return pw.Text(
-          block.content['text'] ?? '',
+          block.content,
           style: theme.heading3Style,
         );
       case BlockType.paragraph:
         return pw.Text(
-          block.content['text'] ?? '',
+          block.content,
           style: theme.bodyStyle,
         );
       case BlockType.quote:
@@ -533,7 +536,7 @@ class ExportService {
             color: theme.quoteBgColor,
           ),
           child: pw.Text(
-            block.content['text'] ?? '',
+            block.content,
             style: theme.quoteStyle,
           ),
         );
@@ -544,7 +547,7 @@ class ExportService {
             pw.Text('• ', style: theme.bodyStyle),
             pw.Expanded(
               child: pw.Text(
-                block.content['text'] ?? '',
+                block.content,
                 style: theme.bodyStyle,
               ),
             ),
@@ -557,7 +560,7 @@ class ExportService {
             pw.Text('${block.position + 1}. ', style: theme.bodyStyle),
             pw.Expanded(
               child: pw.Text(
-                block.content['text'] ?? '',
+                block.content,
                 style: theme.bodyStyle,
               ),
             ),
@@ -568,12 +571,12 @@ class ExportService {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              block.content['checked'] == true ? '☑ ' : '☐ ',
+              block.properties['checked'] == true ? '☑ ' : '☐ ',
               style: theme.bodyStyle,
             ),
             pw.Expanded(
               child: pw.Text(
-                block.content['text'] ?? '',
+                block.content,
                 style: theme.bodyStyle,
               ),
             ),
@@ -626,7 +629,7 @@ class ExportService {
       case BlockType.numberedList:
         return '${block.position + 1}. ${block.content['text'] ?? ''}';
       case BlockType.todo:
-        final checked = block.content['checked'] == true ? 'x' : ' ';
+        final checked = block.properties['checked'] == true ? 'x' : ' ';
         return '- [$checked] ${block.content['text'] ?? ''}';
       case BlockType.code:
         final language = block.content['language'] ?? '';
@@ -656,7 +659,7 @@ class ExportService {
       case BlockType.numberedList:
         return '<li>${_escapeHtml(block.content['text'] ?? '')}</li>';
       case BlockType.todo:
-        final checked = block.content['checked'] == true ? 'checked' : '';
+        final checked = block.properties['checked'] == true ? 'checked' : '';
         return '<label><input type="checkbox" $checked disabled> ${_escapeHtml(block.content['text'] ?? '')}</label>';
       case BlockType.code:
         final code = block.content['code'] ?? block.content['text'] ?? '';
@@ -685,7 +688,7 @@ class ExportService {
       case BlockType.numberedList:
         return '${block.position + 1}. $text';
       case BlockType.todo:
-        final checkbox = block.content['checked'] == true ? '[✓]' : '[  ]';
+        final checkbox = block.properties['checked'] == true ? '[✓]' : '[  ]';
         return '$checkbox $text';
       case BlockType.code:
         final code = block.content['code'] ?? text;
@@ -728,8 +731,8 @@ class ExportService {
       buffer.writeln('# ${workspace.name}');
       buffer.writeln();
       
-      if (workspace.description?.isNotEmpty ?? false) {
-        buffer.writeln('${workspace.description}');
+      if (workspace.description.isNotEmpty ?? false) {
+        buffer.writeln(workspace.description);
         buffer.writeln();
       }
       
@@ -812,8 +815,8 @@ class ExportService {
       buffer.writeln('<header>');
       buffer.writeln('<h1>${_escapeHtml(workspace.name)}</h1>');
       
-      if (workspace.description?.isNotEmpty ?? false) {
-        buffer.writeln('<p class="description">${_escapeHtml(workspace.description!)}</p>');
+      if (workspace.description.isNotEmpty ?? false) {
+        buffer.writeln('<p class="description">${_escapeHtml(workspace.description)}</p>');
       }
       
       if (options.includeMetadata) {

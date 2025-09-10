@@ -75,7 +75,7 @@ class _NotionPropertiesPanelState extends State<NotionPropertiesPanel> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: theme.dividerColor.withOpacity(0.5)),
+          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5)),
         ),
       ),
       child: Row(
@@ -366,9 +366,9 @@ class _NotionPropertiesPanelState extends State<NotionPropertiesPanel> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.2) : theme.colorScheme.surfaceContainerHighest,
+          color: isSelected ? color.withValues(alpha: 0.2) : theme.colorScheme.surfaceContainerHighest,
           border: Border.all(
-            color: isSelected ? color : theme.colorScheme.outline.withOpacity(0.3),
+            color: isSelected ? color : theme.colorScheme.outline.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(12),
         ),

@@ -8,16 +8,23 @@ import 'package:notably/pages/note_editor_page.dart';
 import 'package:notably/theme/notion_theme.dart';
 import 'models/note.dart';
 import 'providers/theme_provider.dart';
+import 'services/database_setup_service.dart';
 
 const supabaseUrl = 'https://nxqlxybhwqocfcubngwa.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cWx4eWJod3FvY2ZjdWJuZ3dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUwMTk4ODksImV4cCI6MjA3MDU5NTg4OX0.f1dMukTLUE6V8M9_EHp2LpkdylvoOBY1_qS4Aww2N-k';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Supabase
   await Supabase.initialize(
     url: supabaseUrl,
     anonKey: supabaseAnonKey,
   );
+  
+  // Auto-setup database schema
+  await DatabaseSetupService.ensureDatabaseSchema();
+  
   runApp(const ProviderScope(child: NotablyApp()));
 }
 
