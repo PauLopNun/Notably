@@ -25,7 +25,8 @@
       "Bash(r)",
       "Bash(echo:*)",
       "Bash(git commit:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []
