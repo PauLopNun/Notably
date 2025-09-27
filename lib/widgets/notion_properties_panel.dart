@@ -23,9 +23,10 @@ class _NotionPropertiesPanelState extends State<NotionPropertiesPanel> {
     'Todo', 'Archive', 'Important', 'Draft'
   ];
   
-  final List<String> _availableColors = [
-    'Default', 'Blue', 'Green', 'Red', 'Yellow', 'Purple', 'Pink', 'Orange'
-  ];
+  // TODO: Implement color selection
+  // final List<String> _availableColors = [
+  //   'Default', 'Blue', 'Green', 'Red', 'Yellow', 'Purple', 'Pink', 'Orange'
+  // ];
 
   @override
   void initState() {

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/workspace.dart';
+import '../models/workspace_member.dart';
 
 final workspaceServiceProvider = Provider<WorkspaceService>((ref) => WorkspaceService());
 
@@ -134,7 +135,7 @@ class WorkspaceService {
 
       return response.map<WorkspaceMember>((item) {
         final userData = item['users'];
-        return WorkspaceMember.fromMap({
+        return WorkspaceMember.fromJson({
           ...item,
           'user_email': userData?['email'],
           'user_name': userData?['raw_user_meta_data']?['name'] ?? userData?['email'],
@@ -202,7 +203,7 @@ class WorkspaceService {
   }
 
   // Utility methods
-  Future<WorkspaceRole> getUserRoleInWorkspace({
+  Future<MemberRole> getUserRoleInWorkspace({
     required String workspaceId,
     required String userId,
   }) async {
@@ -214,16 +215,19 @@ class WorkspaceService {
           .eq('user_id', userId)
           .single();
 
-      return WorkspaceRole.fromString(response['role']);
+      return MemberRole.values.firstWhere(
+        (r) => r.name == response['role'],
+        orElse: () => MemberRole.guest,
+      );
     } catch (e) {
-      return WorkspaceRole.viewer;
+      return MemberRole.guest;
     }
   }
 
   Future<bool> hasPermission({
     required String workspaceId,
     required String userId,
-    required WorkspaceRole requiredRole,
+    required MemberRole requiredRole,
   }) async {
     final userRole = await getUserRoleInWorkspace(
       workspaceId: workspaceId,
@@ -231,14 +235,14 @@ class WorkspaceService {
     );
     
     switch (requiredRole) {
-      case WorkspaceRole.viewer:
+      case MemberRole.guest:
         return true;
-      case WorkspaceRole.member:
-        return userRole.canEdit();
-      case WorkspaceRole.admin:
-        return userRole.canAdmin();
-      case WorkspaceRole.owner:
-        return userRole.canDelete();
+      case MemberRole.member:
+        return userRole.canEdit;
+      case MemberRole.admin:
+        return userRole.canDelete;
+      case MemberRole.owner:
+        return userRole.canDelete;
     }
   }
 }

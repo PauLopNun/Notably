@@ -10,21 +10,21 @@ class TemplateService {
   TemplateService(this._pageService);
 
   /// Get all available templates
-  Future<List<PageTemplate>> getAllTemplates() async {
+  Future<List<NotionTemplate>> getAllTemplates() async {
     // For now, return the predefined templates
     // In a real app, this would fetch from database
     return SubjectTemplates.getAcademicTemplates();
   }
 
   /// Get templates by category
-  Future<List<PageTemplate>> getTemplatesByCategory(String category) async {
+  Future<List<NotionTemplate>> getTemplatesByCategory(String category) async {
     final allTemplates = await getAllTemplates();
     if (category == 'all') return allTemplates;
     return allTemplates.where((template) => template.category == category).toList();
   }
 
   /// Search templates by query
-  Future<List<PageTemplate>> searchTemplates(String query) async {
+  Future<List<NotionTemplate>> searchTemplates(String query) async {
     final allTemplates = await getAllTemplates();
     final lowerQuery = query.toLowerCase();
     
@@ -37,7 +37,7 @@ class TemplateService {
 
   /// Apply a template to create a new page
   Future<NotionPage> applyTemplate({
-    required PageTemplate template,
+    required NotionTemplate template,
     required String workspaceId,
     String? customTitle,
     String? parentId,
@@ -59,7 +59,7 @@ class TemplateService {
         pageId: page.id,
         parentBlockId: block.parentBlockId,
         type: block.type,
-        content: block.content,
+        content: {'text': block.content},
         position: block.position,
         properties: block.properties,
       );
@@ -69,24 +69,26 @@ class TemplateService {
   }
 
   /// Convert template blocks to page blocks
-  List<PageBlock> _convertTemplateBlocks(List<TemplateBlock> templateBlocks, String pageId) {
-    return templateBlocks.map((templateBlock) {
+  List<PageBlock> _convertTemplateBlocks(List<Map<String, dynamic>> templateBlocks, String pageId) {
+    return templateBlocks.asMap().entries.map((entry) {
+      final index = entry.key;
+      final templateBlock = entry.value;
+
       return PageBlock(
         id: _generateBlockId(),
-        pageId: pageId,
-        parentBlockId: templateBlock.parentBlockId,
-        type: templateBlock.type,
-        content: Map<String, dynamic>.from(templateBlock.content),
-        properties: Map<String, dynamic>.from(templateBlock.properties),
-        position: templateBlock.position,
+        type: BlockTypeExtension.fromString(templateBlock['type'] as String? ?? 'paragraph'),
+        content: templateBlock['content']?.toString() ?? '',
+        properties: Map<String, dynamic>.from(templateBlock['properties'] ?? {}),
+        position: index,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        parentId: templateBlock['parentBlockId'] as String?,
       );
     }).toList();
   }
 
   /// Create a custom template from an existing page
-  Future<PageTemplate> createTemplateFromPage({
+  Future<NotionTemplate> createTemplateFromPage({
     required NotionPage page,
     required List<PageBlock> blocks,
     required String name,
@@ -95,34 +97,32 @@ class TemplateService {
     List<String> tags = const [],
   }) async {
     final templateBlocks = blocks.map((block) {
-      return TemplateBlock(
-        id: block.id,
-        parentBlockId: block.parentBlockId,
-        type: block.type,
-        content: Map<String, dynamic>.from(block.content),
-        properties: Map<String, dynamic>.from(block.properties),
-        position: block.position,
-        isPlaceholder: _isPlaceholderContent(block.content),
-        placeholderText: _getPlaceholderText(block.content),
-      );
+      return {
+        'id': block.id,
+        'parentBlockId': block.parentBlockId,
+        'type': block.type.name,
+        'content': block.content,
+        'properties': block.properties,
+        'position': block.position,
+        'isPlaceholder': _isPlaceholderContent(block.content.toString()),
+        'placeholderText': _getPlaceholderText(block.content.toString()),
+      };
     }).toList();
 
-    return PageTemplate(
+    return NotionTemplate(
       id: _generateTemplateId(),
       name: name,
       description: description,
       category: category,
-      icon: page.icon,
+      icon: page.icon ?? '📄',
+      previewImage: 'assets/template_preview.png', // Default preview
       blocks: templateBlocks,
-      createdBy: 'user', // Would be actual user ID in real app
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
       tags: tags,
     );
   }
 
   /// Get featured templates for quick access
-  List<PageTemplate> getFeaturedTemplates() {
+  List<NotionTemplate> getFeaturedTemplates() {
     final allTemplates = SubjectTemplates.getAcademicTemplates();
     // Return most popular/useful templates
     return allTemplates.where((template) => 
@@ -132,14 +132,15 @@ class TemplateService {
   }
 
   /// Get templates by usage count (most popular)
-  Future<List<PageTemplate>> getPopularTemplates({int limit = 6}) async {
+  Future<List<NotionTemplate>> getPopularTemplates({int limit = 6}) async {
     final allTemplates = await getAllTemplates();
-    allTemplates.sort((a, b) => b.usageCount.compareTo(a.usageCount));
+    // Sort by name since usageCount doesn't exist in model
+    allTemplates.sort((a, b) => a.name.compareTo(b.name));
     return allTemplates.take(limit).toList();
   }
 
   /// Get recent templates used by the user
-  Future<List<PageTemplate>> getRecentTemplates({int limit = 5}) async {
+  Future<List<NotionTemplate>> getRecentTemplates({int limit = 5}) async {
     // In a real app, this would track user usage
     // For now, return a subset of templates
     final allTemplates = await getAllTemplates();
@@ -147,17 +148,17 @@ class TemplateService {
   }
 
   /// Check if content contains placeholder text
-  bool _isPlaceholderContent(Map<String, dynamic> content) {
-    final text = content['text']?.toString() ?? '';
+  bool _isPlaceholderContent(String content) {
+    final text = content.toLowerCase();
     return text.contains('[') && text.contains(']') ||
            text.contains('...') ||
-           text.toLowerCase().contains('ejemplo') ||
-           text.toLowerCase().contains('placeholder') ||
-           text.toLowerCase().contains('escribe');
+           text.contains('ejemplo') ||
+           text.contains('placeholder') ||
+           text.contains('escribe');
   }
 
   /// Generate placeholder text for content
-  String? _getPlaceholderText(Map<String, dynamic> content) {
+  String? _getPlaceholderText(String content) {
     if (_isPlaceholderContent(content)) {
       return 'Edita este contenido';
     }
@@ -177,7 +178,7 @@ class TemplateService {
   }
 
   /// Validate template data
-  bool validateTemplate(PageTemplate template) {
+  bool validateTemplate(NotionTemplate template) {
     if (template.name.isEmpty) return false;
     if (template.blocks.isEmpty) return false;
     if (template.category.isEmpty) return false;
@@ -185,7 +186,7 @@ class TemplateService {
   }
 
   /// Get template preview (first few blocks for display)
-  List<TemplateBlock> getTemplatePreview(PageTemplate template, {int maxBlocks = 3}) {
+  List<Map<String, dynamic>> getTemplatePreview(NotionTemplate template, {int maxBlocks = 3}) {
     return template.blocks.take(maxBlocks).toList();
   }
 

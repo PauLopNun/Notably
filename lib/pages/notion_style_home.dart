@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,6 +10,8 @@ import '../widgets/notion_content_area.dart';
 import '../widgets/notion_properties_panel.dart';
 import '../widgets/collaboration_panel.dart';
 import '../widgets/advanced_search_dialog.dart';
+import '../widgets/responsive_layout.dart';
+import '../pages/mobile_home_page.dart';
 import '../services/pdf_export_service.dart';
 
 class NotionStyleHome extends ConsumerStatefulWidget {
@@ -144,10 +147,18 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
   Future<void> _exportToPDF(Note note) async {
     try {
       final pdfService = PDFExportService();
-      final filePath = await pdfService.exportNoteToPDF(note);
-      _showSnackBar('PDF exported to: $filePath');
+
+      if (kIsWeb) {
+        // For web, use the download method
+        await pdfService.downloadPDFForWeb(note);
+        _showSnackBar('PDF descargado exitosamente');
+      } else {
+        // For mobile/desktop, save to local storage
+        final filePath = await pdfService.exportNoteToPDF(note);
+        _showSnackBar('PDF exportado a: $filePath');
+      }
     } catch (e) {
-      _showSnackBar('Error exporting PDF: $e', isError: true);
+      _showSnackBar('Error exportando PDF: $e', isError: true);
     }
   }
 
@@ -216,7 +227,19 @@ class _NotionStyleHomeState extends ConsumerState<NotionStyleHome> {
   Widget build(BuildContext context) {
     final notes = ref.watch(notesProvider);
     final theme = Theme.of(context);
-    
+
+    return ResponsiveLayout(
+      mobile: const MobileHomePage(),
+      tablet: _buildTabletLayout(notes, theme),
+      desktop: _buildDesktopLayout(notes, theme),
+    );
+  }
+
+  Widget _buildTabletLayout(List<Note> notes, ThemeData theme) {
+    return _buildDesktopLayout(notes, theme); // For now, tablet uses desktop layout
+  }
+
+  Widget _buildDesktopLayout(List<Note> notes, ThemeData theme) {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       body: KeyboardListener(

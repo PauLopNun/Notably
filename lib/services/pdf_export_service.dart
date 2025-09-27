@@ -12,175 +12,152 @@ class PDFExportService {
     if (kIsWeb) {
       throw UnsupportedError('Use generatePDFBytes() for web downloads');
     }
-    
-    final pdf = pw.Document();
-    
-    // Use built-in fonts for web compatibility
-    final fontData = pw.Font.helvetica();
-    final boldFontData = pw.Font.helveticaBold();
-    
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(72), // 1 inch margins
-        build: (context) => [
-          // Title
-          pw.Header(
-            level: 0,
-            child: pw.Text(
-              note.title.isEmpty ? 'Untitled' : note.title,
-              style: pw.TextStyle(
-                font: boldFontData,
-                fontSize: 24,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-          ),
-          
-          pw.SizedBox(height: 20),
-          
-          // Metadata
-          pw.Container(
-            padding: const pw.EdgeInsets.all(12),
-            decoration: pw.BoxDecoration(
-              color: PdfColors.grey100,
-              borderRadius: pw.BorderRadius.circular(4),
-            ),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text(
-                  'Created: ${_formatDate(note.createdAt)}',
-                  style: pw.TextStyle(
-                    font: fontData,
-                    fontSize: 12,
-                    color: PdfColors.grey600,
-                  ),
-                ),
-                pw.SizedBox(height: 4),
-                pw.Text(
-                  'Last Modified: ${_formatDate(note.updatedAt)}',
-                  style: pw.TextStyle(
-                    font: fontData,
-                    fontSize: 12,
-                    color: PdfColors.grey600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          pw.SizedBox(height: 24),
-          
-          // Content
-          pw.Text(
-            _convertContentToText(note.content),
-            style: pw.TextStyle(
-              font: fontData,
-              fontSize: 12,
-              lineSpacing: 1.5,
-            ),
-          ),
-        ],
-        footer: (context) => pw.Container(
-          alignment: pw.Alignment.centerRight,
-          margin: const pw.EdgeInsets.only(top: 1.0 * PdfPageFormat.cm),
-          child: pw.Text(
-            'Page ${context.pageNumber} of ${context.pagesCount}',
-            style: pw.TextStyle(
-              font: fontData,
-              fontSize: 10,
-              color: PdfColors.grey600,
-            ),
-          ),
-        ),
-      ),
-    );
-    
-    // Save the PDF
-    final directory = await getApplicationDocumentsDirectory();
-    final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
-    final file = File('${directory.path}/$fileName');
-    
-    await file.writeAsBytes(await pdf.save());
-    
-    return file.path;
+
+    try {
+      final pdfBytes = await generatePDFBytes(note);
+
+      // Save the PDF
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final file = File('${directory.path}/$fileName');
+
+      await file.writeAsBytes(pdfBytes);
+
+      return file.path;
+    } catch (e) {
+      debugPrint('Error exporting PDF: $e');
+      throw Exception('Error al exportar PDF: ${e.toString()}');
+    }
   }
 
   Future<void> sharePDF(Note note) async {
-    if (kIsWeb) {
-      throw UnsupportedError('Share PDF not supported on web');
+    try {
+      final pdfBytes = await generatePDFBytes(note);
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.pdf',
+      );
+    } catch (e) {
+      debugPrint('Error sharing PDF: $e');
+      throw Exception('Error al compartir PDF: ${e.toString()}');
     }
-    final pdfBytes = await generatePDFBytes(note);
-    await Printing.sharePdf(
-      bytes: pdfBytes,
-      filename: '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.pdf',
-    );
   }
 
   Future<void> printPDF(Note note) async {
-    if (kIsWeb) {
-      throw UnsupportedError('Print PDF not supported on web');
+    try {
+      final pdfBytes = await generatePDFBytes(note);
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdfBytes,
+      );
+    } catch (e) {
+      debugPrint('Error printing PDF: $e');
+      throw Exception('Error al imprimir PDF: ${e.toString()}');
     }
-    final pdfBytes = await generatePDFBytes(note);
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdfBytes,
-    );
   }
 
   Future<Uint8List> generatePDFBytes(Note note) async {
-    final pdf = pw.Document();
-    // Use built-in fonts for web compatibility - no external font loading
-    final fontData = pw.Font.helvetica();
-    final boldFontData = pw.Font.helveticaBold();
-    
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(72),
-        build: (context) => [
-          pw.Header(
-            level: 0,
-            child: pw.Text(
-              note.title.isEmpty ? 'Untitled' : note.title,
+    try {
+      final pdf = pw.Document();
+
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(72), // 1 inch margins
+          build: (context) => [
+            // Title
+            pw.Header(
+              level: 0,
+              child: pw.Text(
+                note.title.isEmpty ? 'Sin título' : note.title,
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+
+            pw.SizedBox(height: 20),
+
+            // Metadata
+            pw.Container(
+              padding: const pw.EdgeInsets.all(12),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.grey100,
+                borderRadius: pw.BorderRadius.circular(4),
+              ),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                    'Creado: ${_formatDate(note.createdAt)}',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      color: PdfColors.grey600,
+                    ),
+                  ),
+                  pw.SizedBox(height: 4),
+                  pw.Text(
+                    'Modificado: ${_formatDate(note.updatedAt)}',
+                    style: pw.TextStyle(
+                      fontSize: 12,
+                      color: PdfColors.grey600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            pw.SizedBox(height: 24),
+
+            // Content
+            pw.Text(
+              _convertContentToText(note.content),
               style: pw.TextStyle(
-                font: boldFontData,
-                fontSize: 24,
-                fontWeight: pw.FontWeight.bold,
+                fontSize: 12,
+                lineSpacing: 1.5,
+              ),
+            ),
+          ],
+          footer: (context) => pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(top: 1.0 * PdfPageFormat.cm),
+            child: pw.Text(
+              'Página ${context.pageNumber} de ${context.pagesCount}',
+              style: pw.TextStyle(
+                fontSize: 10,
+                color: PdfColors.grey600,
               ),
             ),
           ),
-          pw.SizedBox(height: 20),
-          pw.Text(
-            _convertContentToText(note.content),
-            style: pw.TextStyle(
-              font: fontData,
-              fontSize: 12,
-              lineSpacing: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-    
-    return pdf.save();
+        ),
+      );
+
+      return pdf.save();
+    } catch (e) {
+      debugPrint('Error generating PDF bytes: $e');
+      throw Exception('Error al generar PDF: ${e.toString()}');
+    }
   }
 
   String _convertContentToText(List<dynamic> content) {
-    if (content.isEmpty) return 'No content';
-    
-    // This is a simplified conversion from Quill delta to text
-    // In a real implementation, you'd want to properly parse the delta format
+    if (content.isEmpty) return 'Sin contenido';
+
     try {
       final buffer = StringBuffer();
       for (final op in content) {
         if (op is Map && op.containsKey('insert')) {
-          buffer.write(op['insert'].toString());
+          final text = op['insert'].toString();
+          // Clean up the text
+          if (text.trim().isNotEmpty && text != '\n') {
+            buffer.write(text);
+          }
         }
       }
-      return buffer.toString().isEmpty ? 'No content' : buffer.toString();
+      final result = buffer.toString().trim();
+      return result.isEmpty ? 'Sin contenido' : result;
     } catch (e) {
-      return content.toString();
+      debugPrint('Error converting content: $e');
+      return 'Error al procesar el contenido';
     }
   }
 
@@ -190,6 +167,27 @@ class PDFExportService {
 
   String _sanitizeFileName(String fileName) {
     // Remove invalid characters for file names
-    return fileName.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
+    return fileName.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').trim();
+  }
+
+  // Web-specific download function
+  Future<void> downloadPDFForWeb(Note note) async {
+    if (!kIsWeb) {
+      throw UnsupportedError('This method is only for web');
+    }
+
+    try {
+      final pdfBytes = await generatePDFBytes(note);
+      final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.pdf';
+
+      // Use the printing package's download functionality
+      await Printing.sharePdf(
+        bytes: pdfBytes,
+        filename: fileName,
+      );
+    } catch (e) {
+      debugPrint('Error downloading PDF for web: $e');
+      throw Exception('Error al descargar PDF: ${e.toString()}');
+    }
   }
 }

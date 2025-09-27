@@ -461,11 +461,23 @@ class WebRtcService {
   }
 
   // Cleanup
-  void dispose() {
-    disconnect();
-    _connectionStateController.close();
-    _operationsController.close();
-    _presenceController.close();
+  void dispose() async {
+    try {
+      await disconnect();
+
+      // Close stream controllers if not already closed
+      if (!_connectionStateController.isClosed) {
+        await _connectionStateController.close();
+      }
+      if (!_operationsController.isClosed) {
+        await _operationsController.close();
+      }
+      if (!_presenceController.isClosed) {
+        await _presenceController.close();
+      }
+    } catch (e) {
+      log('Error during WebRTC service disposal: $e');
+    }
   }
 }
 

@@ -4,7 +4,7 @@ enum MemberRole { owner, admin, member, guest }
 
 enum WorkspaceRole { owner, admin, member, guest }
 
-enum ActivityAction { created, updated, deleted, shared, archived }
+enum ActivityAction { created, updated, deleted, shared, archived, pageCreated, pageUpdated, pageDeleted, pageMoved }
 
 class WorkspaceMember extends Equatable {
   final String id;

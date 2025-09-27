@@ -154,9 +154,9 @@ class ImportService {
           for (final block in page.blocks) {
             await _pageService.createBlock(
           pageId: importedPage.id,
-          type: block.type,
-          content: block.content,
-          position: block.position,
+          type: BlockTypeExtension.fromString(block['type'] as String),
+          content: block['content'] as Map<String, dynamic>,
+          position: block['position'] as int,
         );
           }
           
@@ -243,13 +243,11 @@ class ImportService {
         else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           if (trimmed.startsWith('- [') && trimmed.contains(']')) {
             // Todo item
-            final checked = trimmed.contains('- [x]') || trimmed.contains('- [X]');
             final text = trimmed.substring(trimmed.indexOf(']') + 1).trim();
             block = PageBlock(
               id: _uuid.v4(),
-              pageId: '', // Will be set when adding to page
               type: BlockType.todo,
-              content: {'text': text, 'checked': checked},
+              content: text,
               position: position,
               createdAt: DateTime.now(),
               updatedAt: DateTime.now(),
@@ -272,9 +270,8 @@ class ImportService {
         else if (trimmed == '---' || trimmed == '***') {
           block = PageBlock(
             id: _uuid.v4(),
-            pageId: '', // Will be set when adding to page
             type: BlockType.divider,
-            content: {},
+            content: '',
             position: position,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
@@ -301,7 +298,7 @@ class ImportService {
         await _pageService.createBlock(
           pageId: page.id,
           type: block.type,
-          content: block.content,
+          content: {'text': block.content},
           position: block.position,
         );
       }
@@ -399,7 +396,7 @@ class ImportService {
         await _pageService.createBlock(
           pageId: page.id,
           type: block.type,
-          content: block.content,
+          content: {'text': block.content},
           position: block.position,
         );
       }
@@ -437,9 +434,9 @@ class ImportService {
         for (final block in page.blocks) {
           await _pageService.createBlock(
           pageId: importedPage.id,
-          type: block.type,
-          content: block.content,
-          position: block.position,
+          type: BlockTypeExtension.fromString(block['type'] as String),
+          content: block['content'] as Map<String, dynamic>,
+          position: block['position'] as int,
         );
         }
 
@@ -518,14 +515,13 @@ class ImportService {
     int position, [
     Map<String, dynamic>? additionalContent,
   ]) {
-    final content = <String, dynamic>{'text': text};
-    content.addAll(additionalContent ?? {});
+    final contentMap = <String, dynamic>{'text': text};
+    contentMap.addAll(additionalContent ?? {});
 
     return PageBlock(
       id: _uuid.v4(),
-      pageId: '', // Will be set when adding to page
       type: type,
-      content: content,
+      content: text, // Store the text content as string for PageBlock
       position: position,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),

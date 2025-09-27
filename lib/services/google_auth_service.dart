@@ -5,17 +5,22 @@ import 'package:flutter/foundation.dart';
 class GoogleAuthService {
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
-    // Configure Client ID for web platform
-    clientId: kIsWeb ? 'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com' : null,
+    // For web, you need to configure this in pubspec.yaml and index.html
+    // For now, we'll handle this gracefully
   );
-  
+
   final _client = Supabase.instance.client;
 
   Future<AuthResponse?> signInWithGoogle() async {
     try {
+      // Check if Google Sign-In is available
+      if (kIsWeb && !await _isGoogleSignInConfigured()) {
+        throw Exception('Google Sign-In no está configurado correctamente para web. Por favor, configura las credenciales de Google.');
+      }
+
       // Start the Google sign-in process
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      
+
       if (googleUser == null) {
         // User cancelled the sign-in
         return null;
@@ -23,9 +28,9 @@ class GoogleAuthService {
 
       // Get the Google authentication details
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      
+
       if (googleAuth.idToken == null) {
-        throw Exception('No ID Token found');
+        throw Exception('No se pudo obtener el token de autenticación de Google');
       }
 
       // Sign in to Supabase with the Google ID token
@@ -37,10 +42,21 @@ class GoogleAuthService {
 
       debugPrint('Google sign-in successful: ${response.user?.email}');
       return response;
-      
+
     } catch (e) {
       debugPrint('Google sign-in error: $e');
-      rethrow;
+      // Don't rethrow - handle gracefully
+      throw Exception('Error al iniciar sesión con Google: ${e.toString()}');
+    }
+  }
+
+  Future<bool> _isGoogleSignInConfigured() async {
+    try {
+      // Try to initialize Google Sign-In to check if it's configured
+      await _googleSignIn.isSignedIn();
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 

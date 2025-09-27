@@ -26,7 +26,8 @@ class _CollaborationPanelState extends State<CollaborationPanel>
   
   bool _isInviting = false;
   List<Map<String, dynamic>> _collaborators = [];
-  List<Map<String, dynamic>> _pendingInvitations = [];
+  // TODO: Implement pending invitations
+  // List<Map<String, dynamic>> _pendingInvitations = [];
 
   @override
   void initState() {
@@ -46,7 +47,8 @@ class _CollaborationPanelState extends State<CollaborationPanel>
   Future<void> _loadPendingInvitations() async {
     final invitations = await _collaborationService.getPendingInvitations();
     if (mounted) {
-      setState(() => _pendingInvitations = invitations);
+      // TODO: Implement pending invitations state management
+      // setState(() => _pendingInvitations = invitations);
     }
   }
 

@@ -18,7 +18,7 @@ class AdvancedSearchDialog extends StatefulWidget {
 }
 
 class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
-    with SingleTickerProviderStateMixin, TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -29,7 +29,8 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
   List<Note> _filteredNotes = [];
   int _selectedIndex = 0;
   String _selectedFilter = 'all';
-  DateTimeRange? _dateRange;
+  // TODO: Implement date range filtering
+  // DateTimeRange? _dateRange;
   
   final List<SearchFilter> _filters = [
     SearchFilter('all', 'All notes', Icons.notes, null),
@@ -417,8 +418,8 @@ class _AdvancedSearchDialogState extends State<AdvancedSearchDialog>
         ? '${contentText.substring(0, 150)}...'
         : contentText;
 
-    // Highlight search terms
-    final query = _searchController.text.toLowerCase();
+    // TODO: Implement search term highlighting
+    // final query = _searchController.text.toLowerCase();
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

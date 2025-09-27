@@ -24,16 +24,16 @@ class _TableBlockWidgetState extends State<TableBlockWidget> {
   }
 
   void _initializeTableData() {
-    final content = widget.block.content;
+    final content = widget.block.content as Map<String, dynamic>? ?? {};
     _tableData = {
       'rows': content['rows'] ?? [
         ['Header 1', 'Header 2', 'Header 3'],
         ['Row 1, Col 1', 'Row 1, Col 2', 'Row 1, Col 3'],
         ['Row 2, Col 1', 'Row 2, Col 2', 'Row 2, Col 3'],
       ],
-      'columnCount': content['columnCount'] ?? 3,
-      'rowCount': content['rowCount'] ?? 3,
-      'headerRow': content['headerRow'] ?? true,
+      'columnCount': (content['columnCount'] as num?)?.toInt() ?? 3,
+      'rowCount': (content['rowCount'] as num?)?.toInt() ?? 3,
+      'headerRow': content['headerRow'] as bool? ?? true,
     };
   }
 

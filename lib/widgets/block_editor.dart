@@ -6,7 +6,7 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../models/block.dart' as models;
 import '../models/page.dart' as models;
 import '../providers/page_provider.dart';
-import '../providers/collaboration_provider.dart';
+// import '../providers/collaboration_provider.dart'; // TODO: Re-enable when collaboration is fully implemented
 import 'blocks/text_block_widget.dart';
 import 'blocks/heading_block_widget.dart';
 import 'blocks/list_block_widget.dart';
@@ -41,14 +41,15 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
     super.initState();
     
     // Join collaboration for this page
-    if (!widget.isReadOnly) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(collaborationProvider.notifier).joinPage(
-          pageId: widget.page.id,
-          workspaceId: widget.page.workspaceId,
-        );
-      });
-    }
+    // TODO: Implement joinPage method in CollaborationNotifier
+    // if (!widget.isReadOnly) {
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     ref.read(collaborationProvider.notifier).joinPage(
+    //       pageId: widget.page.id,
+    //       workspaceId: widget.page.workspaceId,
+    //     );
+    //   });
+    // }
   }
 
   @override
@@ -62,9 +63,10 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
     }
     
     // Leave collaboration
-    if (!widget.isReadOnly) {
-      ref.read(collaborationProvider.notifier).leavePage();
-    }
+    // TODO: Implement leavePage method in CollaborationNotifier
+    // if (!widget.isReadOnly) {
+    //   ref.read(collaborationProvider.notifier).leavePage();
+    // }
     
     super.dispose();
   }
@@ -514,7 +516,7 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
     try {
       await ref.read(pageBlocksProvider(widget.page.id).notifier).createBlock(
         type: block.type,
-        content: Map.from(block.content),
+        content: {'text': block.content},
         position: position,
         properties: Map.from(block.properties),
       );
@@ -559,15 +561,16 @@ class _BlockEditorState extends ConsumerState<BlockEditor> {
   Future<void> _updateBlockContent(models.PageBlock block, Map<String, dynamic> newContent) async {
     try {
       final updatedBlock = block.copyWith(
-        content: {...block.content, ...newContent},
+        content: newContent['text']?.toString() ?? block.content,
       );
       
       await ref.read(pageBlocksProvider(widget.page.id).notifier).updateBlock(updatedBlock);
       
       // Broadcast to other collaborators
-      if (!widget.isReadOnly) {
-        ref.read(collaborationProvider.notifier).broadcastBlockUpdate(updatedBlock);
-      }
+      // TODO: Implement broadcastBlockUpdate method in CollaborationNotifier
+      // if (!widget.isReadOnly) {
+      //   ref.read(collaborationProvider.notifier).broadcastBlockUpdate(updatedBlock);
+      // }
     } catch (e) {
       _showError('Failed to update block: $e');
     }

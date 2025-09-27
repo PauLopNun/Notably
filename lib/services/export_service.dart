@@ -333,6 +333,7 @@ class ExportService {
   Future<void> shareFile(ExportResult result) async {
     if (result.isSuccess && result.filePath != null) {
       final xFile = XFile(result.filePath!);
+      // TODO: Update to use SharePlus.instance.share()
       await Share.shareXFiles([xFile], text: 'Exported from Notably');
     }
   }
@@ -443,7 +444,7 @@ class ExportService {
           pw.Container(
             margin: const pw.EdgeInsets.only(top: 10),
             child: pw.Text(
-              workspace.description!,
+              workspace.description,
               style: theme.subtitleStyle,
               textAlign: pw.TextAlign.center,
             ),

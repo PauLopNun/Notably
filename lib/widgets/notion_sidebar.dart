@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+// import 'package:supabase_flutter/supabase_flutter.dart'; // TODO: Re-enable when needed
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
-import 'dart:convert';
+// import 'dart:convert'; // TODO: Re-enable when needed
 import 'package:flutter/foundation.dart';
 import '../models/note.dart';
 import '../models/template.dart';
@@ -114,62 +114,63 @@ class _NotionSidebarState extends ConsumerState<NotionSidebar> {
     );
   }
 
-  Widget _buildHeader(ThemeData theme) {
-    final user = Supabase.instance.client.auth.currentUser;
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          // User Avatar
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: theme.colorScheme.primary,
-            child: Text(
-              user?.email?.substring(0, 1).toUpperCase() ?? 'U',
-              style: TextStyle(
-                color: theme.colorScheme.onPrimary,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          
-          // Workspace Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Notably Workspace',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  user?.email ?? 'Guest User',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          
-          // Collapse Button
-          IconButton(
-            icon: const Icon(Icons.first_page, size: 18),
-            tooltip: 'Collapse sidebar',
-            onPressed: widget.onToggleSidebar,
-            constraints: const BoxConstraints(),
-            padding: const EdgeInsets.all(4),
-          ),
-        ],
-      ),
-    );
-  }
+  // TODO: Implement sidebar header when needed
+  // Widget _buildHeader(ThemeData theme) {
+  //   final user = Supabase.instance.client.auth.currentUser;
+  //
+  //   return Container(
+  //     padding: const EdgeInsets.all(16),
+  //     child: Row(
+  //       children: [
+  //         // User Avatar
+  //         CircleAvatar(
+  //           radius: 16,
+  //           backgroundColor: theme.colorScheme.primary,
+  //           child: Text(
+  //             user?.email?.substring(0, 1).toUpperCase() ?? 'U',
+  //             style: TextStyle(
+  //               color: theme.colorScheme.onPrimary,
+  //               fontSize: 12,
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //         ),
+  //         const SizedBox(width: 12),
+  //
+  //         // Workspace Info
+  //         Expanded(
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 'Notably Workspace',
+  //                 style: theme.textTheme.titleSmall?.copyWith(
+  //                   fontWeight: FontWeight.w600,
+  //                 ),
+  //               ),
+  //               Text(
+  //                 user?.email ?? 'Guest User',
+  //                 style: theme.textTheme.bodySmall?.copyWith(
+  //                   color: theme.colorScheme.onSurfaceVariant,
+  //                 ),
+  //                 overflow: TextOverflow.ellipsis,
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //
+  //         // Collapse Button
+  //         IconButton(
+  //           icon: const Icon(Icons.first_page, size: 18),
+  //           tooltip: 'Collapse sidebar',
+  //           onPressed: widget.onToggleSidebar,
+  //           constraints: const BoxConstraints(),
+  //           padding: const EdgeInsets.all(4),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildSearchBar(ThemeData theme) {
     return Container(
@@ -745,8 +746,9 @@ class _NotionSidebarState extends ConsumerState<NotionSidebar> {
       
       if (kIsWeb) {
         // For web: Generate PDF bytes and download through browser
-        final pdfBytes = await pdfService.generatePDFBytes(note);
-        final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.pdf';
+        // TODO: Implement web PDF download
+        // final pdfBytes = await pdfService.generatePDFBytes(note);
+        // final fileName = '${note.title.isEmpty ? 'Untitled' : _sanitizeFileName(note.title)}.pdf';
         
         // TODO: Implement web download using package:web
         // For now, just show success message
@@ -823,7 +825,8 @@ class _NotionSidebarState extends ConsumerState<NotionSidebar> {
       
       if (kIsWeb) {
         // For web: Create download link and trigger download
-        final bytes = utf8.encode(content);
+        // TODO: Implement web download
+        // final bytes = utf8.encode(content);
         // TODO: Implement web download using package:web
         // final blob = html.Blob([bytes], 'text/markdown');
         // final url = html.Url.createObjectUrlFromBlob(blob);

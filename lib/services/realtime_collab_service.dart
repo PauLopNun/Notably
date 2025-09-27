@@ -63,9 +63,18 @@ class RealtimeCollabService {
     _docId = null;
   }
 
-  void dispose() {
-    leave();
-    _incomingContentController.close();
+  void dispose() async {
+    try {
+      await leave();
+
+      if (!_incomingContentController.isClosed) {
+        await _incomingContentController.close();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error disposing realtime collaboration service: $e');
+      }
+    }
   }
 }
 

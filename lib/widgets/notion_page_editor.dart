@@ -38,11 +38,14 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
 
   void _initializeControllers() {
     for (final block in widget.page.blocks) {
-      _focusNodes[block.id] = FocusNode();
-      if (block.type.isTextBlock || block.type.isListBlock) {
-        _textControllers[block.id] = TextEditingController();
-        if (block.content['text'] != null) {
-          _textControllers[block.id]!.text = block.content['text'] as String;
+      final blockId = block['id'] as String;
+      _focusNodes[blockId] = FocusNode();
+      final blockType = BlockTypeExtension.fromString(block['type'] as String);
+      if (blockType.isTextBlock || blockType.isListBlock) {
+        _textControllers[blockId] = TextEditingController();
+        final content = block['content'] as Map<String, dynamic>?;
+        if (content?['text'] != null) {
+          _textControllers[blockId]!.text = content!['text'] as String;
         }
       }
     }
@@ -396,7 +399,9 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
       updatedAt: DateTime.now(),
     );
     // Update page through workspace pages notifier
-    ref.read(workspacePagesNotifierProvider(widget.page.workspaceId).notifier).updatePage(updatedPage);
+    if (widget.page.workspaceId != null) {
+      ref.read(workspacePagesNotifierProvider(widget.page.workspaceId!).notifier).updatePage(updatedPage);
+    }
   }
 
   void _onBlocksReordered(int oldIndex, int newIndex) {
@@ -440,10 +445,8 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
   void _addNewBlock(BlockType type, [int? position]) {
     final newBlock = PageBlock(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      pageId: widget.page.id,
       type: type,
-      content: type.isTextBlock ? {'text': ''} : {},
-      properties: {},
+      content: type.isTextBlock ? '' : '',
       position: position ?? widget.page.blocks.length,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -461,10 +464,8 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
   void _duplicateBlock(PageBlock block) {
     final newBlock = PageBlock(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      pageId: widget.page.id,
       type: block.type,
-      content: Map<String, dynamic>.from(block.content),
-      properties: Map<String, dynamic>.from(block.properties),
+      content: block.content,
       position: block.position + 1,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -574,10 +575,30 @@ class _NotionPageEditorState extends ConsumerState<NotionPageEditor> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
-    _focusNodes.values.forEach((node) => node.dispose());
-    _textControllers.values.forEach((controller) => controller.dispose());
-    _hideSlashMenu();
+    try {
+      // Hide slash menu first
+      _hideSlashMenu();
+
+      // Dispose scroll controller
+      _scrollController.dispose();
+
+      // Dispose focus nodes safely
+      final focusNodes = List<FocusNode>.from(_focusNodes.values);
+      _focusNodes.clear();
+      for (final node in focusNodes) {
+        node.dispose();
+      }
+
+      // Dispose text controllers safely
+      final textControllers = List<TextEditingController>.from(_textControllers.values);
+      _textControllers.clear();
+      for (final controller in textControllers) {
+        controller.dispose();
+      }
+    } catch (e) {
+      print('Error disposing NotionPageEditor: $e');
+    }
+
     super.dispose();
   }
 }

@@ -3,7 +3,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/page.dart';
 import '../models/block.dart';
 import '../models/comment.dart';
-import '../models/workspace.dart';
 import '../models/workspace_member.dart';
 import 'workspace_service.dart';
 
@@ -68,7 +67,7 @@ class PageService {
       final canEdit = await _workspaceService.hasPermission(
         workspaceId: workspaceId,
         userId: user.id,
-        requiredRole: WorkspaceRole.member,
+        requiredRole: MemberRole.member,
       );
       
       if (!canEdit) throw Exception('Insufficient permissions');
@@ -97,7 +96,7 @@ class PageService {
       await _logActivity(
         workspaceId: workspaceId,
         pageId: response['id'],
-        action: ActivityAction.pageCreated.value,
+        action: ActivityAction.pageCreated.name,
         details: {'title': title},
       );
 
@@ -124,7 +123,7 @@ class PageService {
       await _logActivity(
         workspaceId: page.workspaceId,
         pageId: page.id,
-        action: ActivityAction.pageUpdated.value,
+        action: ActivityAction.pageUpdated.name,
         details: {'title': page.title},
       );
     } catch (e) {
@@ -149,7 +148,7 @@ class PageService {
       // Log activity
       await _logActivity(
         workspaceId: pageResponse['workspace_id'],
-        action: ActivityAction.pageDeleted.value,
+        action: ActivityAction.pageDeleted.name,
         details: {'title': pageResponse['title']},
       );
     } catch (e) {
@@ -183,7 +182,7 @@ class PageService {
       await _logActivity(
         workspaceId: pageResponse['workspace_id'],
         pageId: pageId,
-        action: ActivityAction.pageMoved.value,
+        action: ActivityAction.pageMoved.name,
         details: {'title': pageResponse['title']},
       );
     } catch (e) {
@@ -350,19 +349,21 @@ class PageService {
       }
     }
 
-    // Recursively build hierarchy
-    List<NotionPage> buildChildren(NotionPage parent) {
+    // Return pages in hierarchical order (parents first, then children)
+    List<NotionPage> buildHierarchy(NotionPage parent, List<NotionPage> result) {
+      result.add(parent);
       final children = childrenMap[parent.id] ?? [];
-      return children.map((child) {
-        final grandChildren = buildChildren(child);
-        return child.copyWith(children: grandChildren);
-      }).toList();
+      for (final child in children) {
+        buildHierarchy(child, result);
+      }
+      return result;
     }
 
-    return rootPages.map((root) {
-      final children = buildChildren(root);
-      return root.copyWith(children: children);
-    }).toList();
+    final List<NotionPage> hierarchicalPages = [];
+    for (final root in rootPages) {
+      buildHierarchy(root, hierarchicalPages);
+    }
+    return hierarchicalPages;
   }
 
   List<PageBlock> _buildBlockHierarchy(List<PageBlock> blocks) {

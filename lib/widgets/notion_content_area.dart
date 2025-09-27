@@ -30,7 +30,8 @@ class NotionContentArea extends StatefulWidget {
 class _NotionContentAreaState extends State<NotionContentArea> {
   late TextEditingController _titleController;
   late QuillController _contentController;
-  final bool _isEditing = false;
+  // TODO: Implement editing state
+  // final bool _isEditing = false;
   String _selectedEmoji = '📄';
 
   @override

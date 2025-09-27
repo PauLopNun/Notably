@@ -808,7 +808,7 @@ class _AdvancedSearchState extends ConsumerState<AdvancedSearch> {
           if (_matchesQuery(blockText, query)) {
             results.add(SearchResult(
               page: page,
-              blockId: block.id,
+              blockId: block['id']?.toString() ?? '',
               matchedText: query,
               contextSnippet: _createContextSnippet(blockText, query),
               relevanceScore: _calculateContentRelevance(blockText, query),
@@ -845,36 +845,20 @@ class _AdvancedSearchState extends ConsumerState<AdvancedSearch> {
     return searchText.contains(searchQuery);
   }
 
-  String _extractTextFromBlock(PageBlock block) {
-    switch (block.type) {
-      case BlockType.paragraph:
-        return block.content['text'] ?? '';
-      case BlockType.heading1:
-      case BlockType.heading2:
-      case BlockType.heading3:
-        return block.content['text'] ?? '';
-      case BlockType.bulletedList:
-      case BlockType.numberedList:
-        final items = block.content['items'] as List? ?? [];
-        return items.join(' ');
-      case BlockType.quote:
-        return block.content['text'] ?? '';
-      case BlockType.callout:
-        return block.content['text'] ?? '';
-      case BlockType.code:
-        return block.content['code'] ?? '';
-      case BlockType.table:
-        final rows = block.content['rows'] as List? ?? [];
-        final allCells = <String>[];
-        for (final row in rows) {
-          if (row is List) {
-            allCells.addAll(row.map((cell) => cell.toString()));
-          }
-        }
-        return allCells.join(' ');
-      default:
-        return '';
+  String _extractTextFromBlock(dynamic block) {
+    // Handle both PageBlock objects and Map<String, dynamic>
+    if (block is Map<String, dynamic>) {
+      final content = block['content'];
+      if (content is String) {
+        return content;
+      } else if (content is Map<String, dynamic>) {
+        return content['text']?.toString() ?? content.toString();
+      }
+      return content?.toString() ?? '';
+    } else if (block is PageBlock) {
+      return block.content;
     }
+    return block?.toString() ?? '';
   }
 
   String _createContextSnippet(String text, String query) {

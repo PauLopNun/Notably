@@ -11,6 +11,7 @@ import 'divider_block_widget.dart';
 import 'callout_block_widget.dart';
 import 'image_block_widget.dart';
 import 'table_block_widget.dart';
+import 'toggle_block_widget.dart';
 
 class BlockWidgetFactory {
   static Widget create({
@@ -134,11 +135,29 @@ class BlockWidgetFactory {
           onDelete: onDelete,
         );
 
+      case BlockType.toggle:
+        return ToggleBlockWidget(
+          block: block,
+          focusNode: focusNode,
+          textController: textController,
+          isReadOnly: isReadOnly,
+          isSelected: isSelected,
+          onTextChanged: onTextChanged,
+          onTypeChanged: onTypeChanged,
+          onDelete: onDelete,
+          onSlashCommand: onSlashCommand,
+          onFocusChanged: onFocusChanged,
+        );
+
       // Default cases for not yet implemented blocks
       case BlockType.video:
       case BlockType.file:
       case BlockType.embed:
       case BlockType.database:
+      case BlockType.bookmark:
+      case BlockType.equation:
+      case BlockType.column:
+      case BlockType.columnList:
         return _buildPlaceholderWidget(block, isSelected, onDelete);
     }
   }

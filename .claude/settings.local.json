@@ -24,7 +24,8 @@
       "Bash(find:*)",
       "Bash(r)",
       "Bash(echo:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
